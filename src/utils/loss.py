@@ -233,37 +233,23 @@ def compute_gradient_penalty(D, real_samples, fake_samples, device):
     return gradient_penalty
 
 class custom_loss(base.Loss):
-    def __init__(self, batch_size, beta):
+    def __init__(self, batch_size, loss_weight=0.5):
         super().__init__()
-        self.ssim = StructuralSimilarityIndexMeasure()
+        
+        # metrics
+        # self.ssim = StructuralSimilarityIndexMeasure()
+        # self.psnr = PeakSignalNoiseRatio()
+        self.L1 = nn.L1Loss()
         self.mse = nn.MSELoss()
+        # losses
         self.contrast = ContrastiveLoss(batch_size)
-        self.psnr = PeakSignalNoiseRatio()
-        # self.L1 = nn.L1Loss()
-        self.beta = beta
+        self.GANLoss = GANLoss
+        
+        self.loss_weight = loss_weight
+
     def forward(self, y_pr, y_gt, ft1=None, ft2=None):
-        x=self.mse(y_pr, y_gt)
-        y=1-self.ssim(y_pr, y_gt)
-        z=self.contrast(ft1, ft2)
-        p=(1 - self.psnr(y_pr, y_gt)/40)
-#         l = self.L1(y_pr, y_gt)
-#         print(x,y,z)
-        return x +y/10+p/10 + (z*self.beta)
-        # return x+p/10+z/100+y/10  OG
-    
-class custom_lossv(base.Loss):
-    def __init__(self):
-        super().__init__()
-        self.ssim = StructuralSimilarityIndexMeasure()
-        self.mse = nn.MSELoss()
-        # self.contrast = ContrastiveLoss(batch_size)
-        self.psnr = PeakSignalNoiseRatio()
-        # self.L1 = nn.L1Loss()
-    def forward(self, y_pr, y_gt, ft1=None, ft2=None):
-        x=self.mse(y_pr, y_gt)
-        y=1-self.ssim(y_pr, y_gt)
-        # z=self.contrast(ft1, ft2)
-        p=(1 - self.psnr(y_pr, y_gt)/40)
-        return x +y/10 + p/10
-        # return x+p/10+y/10  OG
+        c = self.contrast(ft1, ft2)
+        g = self.GANLoss(y_pr, y_gt, is_disc=False)
+
+        return (self.loss_weight)*c + (1-self.loss_weight)*g
         
