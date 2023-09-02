@@ -9,7 +9,7 @@ from torchmetrics import StructuralSimilarityIndexMeasure
 from torchmetrics import PeakSignalNoiseRatio
 import torch
 from torch.utils.data import DataLoader
-def train(epochs, batch_size, hr_dir, tar_dir, th_dir, hr_val_dir, tar_val_dir, th_val_dir,encoder='resnet34', encoder_weights='imagenet', device='cuda', lr=1e-4,beta=1 ):
+def train(epochs, batch_size, hr_dir, tar_dir, th_dir, hr_val_dir, tar_val_dir, th_val_dir,encoder='resnet34', encoder_weights='imagenet', device='cuda', lr=1e-4,beta=1, loss_weight=0.5 ):
 
     activation = 'tanh' 
     # create segmentation model with pretrained encoder
@@ -44,8 +44,7 @@ def train(epochs, batch_size, hr_dir, tar_dir, th_dir, hr_val_dir, tar_val_dir, 
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=True)#, drop_last=True)
 
-    loss = custom_loss(batch_size, beta=beta)
-    lossV = custom_lossv()
+    loss = custom_loss(batch_size, beta=beta, loss_weight=loss_weight)
 
     Z = StructuralSimilarityIndexMeasure()
     P = PeakSignalNoiseRatio()
@@ -104,5 +103,5 @@ def train_model(configs):
     train(configs['epochs'], configs['batch_size'], configs['hr_dir'],
          configs['tar_dir'], configs['th_dir'], configs['hr_val_dir'],
          configs['tar_val_dir'], configs['th_val_dir'], configs['encoder'],
-         configs['encoder_weights'], configs['device'], configs['lr'], configs['beta'])
+         configs['encoder_weights'], configs['device'], configs['lr'], configs['beta'], configs['loss_weight'])
          

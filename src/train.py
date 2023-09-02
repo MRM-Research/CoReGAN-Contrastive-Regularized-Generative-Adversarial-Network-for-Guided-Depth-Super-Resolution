@@ -16,7 +16,8 @@ def main(args):
         'encoder': args.encoder,
         'encoder_weights': args.encoder_weights,
         'lr': args.lr,
-        'beta': args.beta
+        'beta': args.beta,
+        'loss_weight': args.loss_weight
     }
     wandb.init(project="DepthMapSR", entity="kasliwal17",
                config={'model':'resnet34 d5','beta':args.beta, 'fusion_technique':'img 2 encoders max tanh x+beta*z+y/10+p/10 saving:ssim',
@@ -39,5 +40,6 @@ if __name__ == '__main__':
     parser.add_argument('--encoder_weights', type=str, required=False, default='imagenet')
     parser.add_argument('--lr', type=float, required=False, default=1e-4)
     parser.add_argument('--beta', type=float, required=False, default=1)
+    parser.add_argument('--loss_weight', type=float, required=False, default=0.5)
     arguments = parser.parse_args()
     main(arguments)
