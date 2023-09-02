@@ -66,4 +66,7 @@ def get_preprocessing(preprocessing_fn):
         albu.Lambda(image=to_tensor, mask=to_tensor),
     ]
     return albu.Compose(_transform)
+
+def extract_number(filename):
+        return int(filename.split('_')[1].split('.')[0])
     

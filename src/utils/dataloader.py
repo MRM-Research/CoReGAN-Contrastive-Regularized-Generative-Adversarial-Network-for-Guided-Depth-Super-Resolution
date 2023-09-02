@@ -2,45 +2,91 @@ from torch.utils.data import DataLoader
 from torch.utils.data import Dataset as BaseDataset
 import cv2
 from .misc import normalize_data, list_img
+from transformations import mi
+import numpy as np
+import torch
+import os
 
-class Dataset(BaseDataset):  
+
+class Dataset():  
+    
     def __init__(
-            self, 
-            hr_dir: str, 
-            thermal_dir:str,
-            tar_dir: str, 
+            self,
+            rgb_dir: str,
+            target_dir: str,
             augmentation=None, 
             preprocessing=None,
-    ):
-        self.hr_list = list_img(hr_dir)
-        self.thermal_list= list_img(thermal_dir)
-        self.tar_list = list_img(tar_dir)
+            resize = None,
         
+    ):
+        self.rgb_list = self.load_img(rgb_dir)
+        self.target_list = self.load_img(target_dir)
         self.augmentation = augmentation
         self.preprocessing = preprocessing
+        self.resize = resize
+        
+    def extract_number(self,filename):
+        return int(filename.split('_')[1].split('.')[0])
+        
+        
+    def standardize(self,image,mean,std):
+        image = image/255
+        image_normalised = image - mean
+        image_standardized = image_normalised / std
+        
+        return image_standardized
     
     def __getitem__(self, i):
         
         # read data
-        himage = cv2.imread(self.hr_list[i])
-        himage = cv2.cvtColor(himage, cv2.COLOR_BGR2RGB)
-        target = cv2.imread(self.tar_list[i], 0)
-        timage = cv2.imread(self.thermal_list[i])
-        # apply augmentations
-        if self.augmentation:
-            sample = self.augmentation(image=himage,image1=timage, mask=target)
-            himage, target, timage= sample['image'], sample['mask'], sample['image1']
-        target = target.reshape(480,640,1)
-#         timage = timage.reshape(480,640,1)
-        if self.preprocessing:
-            sample = self.preprocessing(image=himage, mask=target)
-            himage, target = sample['image'], sample['mask']
-            sample = self.preprocessing(image=timage)
-            timage= sample['image']
-            sample = self.preprocessing
-            target = target/255
-            target = normalize_data(target)
-        return himage,timage, target#, label
+        print(self.rgb_list[i])
+        print(self.target_list[i])
+        rgb_image = np.load(self.rgb_list[i])
+        target_image = np.load(self.target_list[i])
         
+        if self.augmentation:
+            
+            augmented = self.augmentation(image=rgb_image, target=target_image)
+            rgb_image,target_image = augmented['image'],augmented['target']
+            
+            if self.resize:
+                transform = self.resize(image = target_image)
+                depth_low_res_image = transform['image']
+                depth_low_res_image = np.array(depth_low_res_image)
+        
+                
+        target_image = np.array(target_image)
+        
+        if self.preprocessing:
+            
+            rgb_image[0] = self.standardize(rgb_image[0],0.48057137,0.28918139)
+            rgb_image[1] = self.standardize(rgb_image[1],0.4109165,0.29590342)
+            rgb_image[2] = self.standardize(rgb_image[2],0.39225202,0.30930299)
+            target_image = target_image/255.0
+            depth_low_res_image[0] = self.standardize(depth_low_res_image[0],0.42791329,0.5207557)
+            depth_low_res_image[1] = self.standardize(depth_low_res_image[1],0.42791329,0.5207557)
+            depth_low_res_image[2] = self.standardize(depth_low_res_image[2],0.42791329,0.5207557)
+
+        target_image = torch.from_numpy(target_image)
+        depth_low_res_image = torch.from_numpy(depth_low_res_image)
+        rgb_image = torch.from_numpy(rgb_image)
+        target_image = target_image.unsqueeze(0)
+        depth_low_res_image = depth_low_res_image.unsqueeze(0)
+        
+        #target_image = target_image.repeat(3,1,1)
+        #depth_low_res_image = depth_low_res_image.repeat(3,1,1)
+        
+        return rgb_image, depth_low_res_image, target_image
+    
+    def load_img(self,directory):
+        img_list = []
+        files = os.listdir(directory)
+        for file in files:
+            if file.endswith(".npy"):
+                img_list.append(os.path.join(directory, file))
+                
+        sorted_img_list = sorted(img_list, key=self.extract_number)
+        return sorted_img_list
+    
     def __len__(self):
-        return len(self.hr_list)
+        return len(self.rgb_list)
