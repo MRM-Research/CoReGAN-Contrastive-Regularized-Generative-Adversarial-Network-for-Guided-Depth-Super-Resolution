@@ -2,7 +2,6 @@ from torch.utils.data import DataLoader
 from torch.utils.data import Dataset as BaseDataset
 import cv2
 from .misc import normalize_data, list_img
-from transformations import mi
 import numpy as np
 import torch
 import os

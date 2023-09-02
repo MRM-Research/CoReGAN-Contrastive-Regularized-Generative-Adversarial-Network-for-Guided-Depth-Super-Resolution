@@ -2,7 +2,6 @@ import albumentations as albu
 
 def get_training_augmentation():
     train_transform = [
-        albu.Resize(480,640,always_apply=True),
         albu.HorizontalFlip(p=0.5),
         albu.VerticalFlip(p=0.5),
 
@@ -47,6 +46,12 @@ def get_validation_augmentation():
         albu.PadIfNeeded(480,640)
     ]
     return albu.Compose(test_transform,additional_targets={'image1':'mask'})
+
+def resize():
+    return albu.Compose([
+        albu.Resize(120,160, p = 1),
+        # Add more augmentations as needed
+    ])
 
 
 def to_tensor(x, **kwargs):
