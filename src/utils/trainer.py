@@ -3,7 +3,7 @@ import segmentation_models_pytorch as smp
 from .train_utils import TrainEpoch, ValidEpoch
 from .loss import custom_loss, custom_lossv
 from .dataloader import Dataset
-from .transformations import get_training_augmentation, get_validation_augmentation, get_preprocessing
+from .transformations import get_training_augmentation, get_validation_augmentation, get_preprocessing,resize
 from .model import Unet
 from torchmetrics import StructuralSimilarityIndexMeasure
 from torchmetrics import PeakSignalNoiseRatio
