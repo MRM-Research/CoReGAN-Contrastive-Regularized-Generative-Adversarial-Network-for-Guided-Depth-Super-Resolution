@@ -120,7 +120,7 @@ class Unet(SegmentationModel):
         )
         self.encoder2 = get_encoder(
             encoder_name,
-            in_channels=in_channels,
+            in_channels=1,
             depth=encoder_depth,
             weights=encoder_weights,
         )
