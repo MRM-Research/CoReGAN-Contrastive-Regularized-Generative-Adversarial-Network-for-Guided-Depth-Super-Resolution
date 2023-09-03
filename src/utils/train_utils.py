@@ -3,7 +3,7 @@ import torch
 from tqdm import tqdm as tqdm
 import numpy as np
 from collections import OrderedDict
-from torchmetrics import PeakSignalNoiseRatio
+from torchmetrics import PeakSignalNoiseRatio, StructuralSimilarityIndexMeasure
 from torch.optim.lr_scheduler import _LRScheduler as lr_scheduler
 from torch.nn import MSELoss
 from sklearn.metrics import mean_squared_error, mean_absolute_error
@@ -15,34 +15,33 @@ loss_dict = OrderedDict()
 
 def get_current_visuals(self):
     out_dict = OrderedDict()
-    out_dict['Thermal_low_res'] = self.Thermal_low_res.detach().to(self.device)
+    out_dict['depth_low_res'] = self.Thermal_low_res.detach().to(self.device)
     out_dict['result'] = self.output.detach().to(self.device)
     out_dict['RGB'] = self.RGB.detach().to(self.device)
-    if hasattr(self, 'Thermal_high_res'):
-        out_dict['Thermal_high_res'] = self.Thermal_high_res.detach().to(self.device)
+    if hasattr(self, 'depth_high_res'):
+        out_dict['depth_high_res'] = self.Thermal_high_res.detach().to(self.device)
     return out_dict
 
+P = PeakSignalNoiseRatio()
+Z = StructuralSimilarityIndexMeasure()
+
 def calculate_metrics(self, img1, img2):
-            
-            
-            P = PeakSignalNoiseRatio().to(self.device)
-            Z = StructuralSimilarityIndexMeasure().to(self.device)
-            # revert both images to 0, 1 from -1, 1
-            MSE_metric = mean_squared_error(img1, img2)
-            MAE_metric = mean_absolute_error(img1, img2)
-            
-            # for mse, mae check range of calc
-            # for psnr, x by 255
-            
-            img1 = img1*255
-            img1 = img1.round().int()
-            img1 = img1.float()
+    # revert both images to 0, 1 from -1, 1
+    MSE_metric = mean_squared_error(img1, img2)
+    MAE_metric = mean_absolute_error(img1, img2)
+    
+    # for mse, mae check range of calc
+    # for psnr, x by 255
+    
+    img1 = img1*255
+    img1 = img1.round().int()
+    img1 = img1.float()
 
-            img2 = img2*255
-            img2 = img2.round().int()
-            img2 = img2.float()
+    img2 = img2*255
+    img2 = img2.round().int()
+    img2 = img2.float()
 
-            return P(img1, img2).to(self.device), Z(img1, img2).to(self.device), MSE_metric(img1, img2).to(self.device), MAE_metric(img1, img2).to(self.device)
+    return P(img1, img2).to(self.device), Z(img1, img2).to(self.device), MSE_metric(img1, img2).to(self.device), MAE_metric(img1, img2).to(self.device)
 
 class Meter(object):
     """Meters provide a way to keep track of important statistics in an online manner.
@@ -104,8 +103,9 @@ class AverageValueMeter(Meter):
 
 
 class Epoch:
-    def __init__(self, model, loss, metrics, stage_name, device="cpu", verbose=True):
-        self.model = model
+    def __init__(self, model, discriminator, stage_name, device="cpu", verbose=True):
+        self.net_g = model
+        self.net_d = discriminator
         self.stage_name = stage_name
         self.verbose = verbose
         self.device = device
@@ -170,7 +170,7 @@ class Epoch:
 
 
 class TrainEpoch(Epoch):
-    def __init__(self, model, device="cpu", verbose=True, contrastive=False):
+    def __init__(self, model, optimizer, device="cpu", verbose=True, contrastive=False):
         super().__init__(
             model=model,
             stage_name="train",
@@ -178,6 +178,7 @@ class TrainEpoch(Epoch):
             verbose=verbose
         )
         self.contrastive = contrastive
+        self.optimizer = optimizer
 
     def on_epoch_start(self):
         self.net_g.train()
