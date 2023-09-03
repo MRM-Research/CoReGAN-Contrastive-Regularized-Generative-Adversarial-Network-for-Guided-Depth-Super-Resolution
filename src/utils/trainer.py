@@ -70,7 +70,7 @@ def train(epochs, batch_size, hr_dir, tar_dir, th_dir, hr_val_dir, tar_val_dir, 
     )
     valid_epoch = ValidEpoch(
         model, 
-        loss=lossV, 
+        loss=loss, 
         metrics=metrics, 
         device=device,
         verbose=True,
@@ -85,7 +85,7 @@ def train(epochs, batch_size, hr_dir, tar_dir, th_dir, hr_val_dir, tar_val_dir, 
         print('\nEpoch: {}'.format(i))
         train_logs = train_epoch.run(train_loader)
         valid_logs = valid_epoch.run(valid_loader)
-        # scheduler.step()
+        
         print(train_logs)
         wandb.log({'epoch':i+1,'t_loss':train_logs['custom_loss'],'t_ssim':train_logs['ssim'],'v_loss':valid_logs['custom_lossv'],'v_ssim':valid_logs['ssim'],'v_psnr':valid_logs['psnr'],'t_psnr':train_logs['psnr']})
         # do something (save model, change lr, etc.)
@@ -104,4 +104,13 @@ def train_model(configs):
          configs['tar_dir'], configs['th_dir'], configs['hr_val_dir'],
          configs['tar_val_dir'], configs['th_val_dir'], configs['encoder'],
          configs['encoder_weights'], configs['device'], configs['lr'], configs['beta'], configs['loss_weight'])
+    
+# log mse, mae, psnr, ssim so we know how to tune weights for GANLoss
+# change calling of epoch w no loss, optimizer
+# 1. Change GT to -1, 1 - using 'tanify' or wtv
+# 2. In metrics, change back to 0, 1 from -1, 1 , rest remains the same - dont clamp
+# 3. Use hard-coded metrics logs
+# 4. change min max in saving
+# 5. change wand.config.update and init - init mse and mae as big value
+# 6. custom loss v in val epoch
          
