@@ -103,6 +103,7 @@ class AverageValueMeter(Meter):
 
 
 class Epoch:
+    
     def __init__(self, model, loss, metrics, stage_name, device="cpu", verbose=True):
         self.model = model
         self.loss = loss

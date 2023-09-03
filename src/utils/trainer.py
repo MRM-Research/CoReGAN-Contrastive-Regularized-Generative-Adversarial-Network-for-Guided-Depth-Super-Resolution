@@ -9,7 +9,8 @@ from torchmetrics import StructuralSimilarityIndexMeasure
 from torchmetrics import PeakSignalNoiseRatio
 import torch
 from torch.utils.data import DataLoader
-def train(epochs, batch_size, hr_dir, tar_dir, hr_val_dir, tar_val_dir,encoder='resnet34', encoder_weights='imagenet', device='cuda', lr=1e-4,beta=1, loss_weight=0.5 ):
+
+def train(epochs, batch_size, hr_dir, tar_dir, hr_val_dir, tar_val_dir,hr_test_dir,tar_test_dir,encoder='resnet34', encoder_weights='imagenet', device='cuda', lr=1e-4,beta=1, loss_weight=0.5 ):
 
     activation = 'tanh' 
     # create segmentation model with pretrained encoder
@@ -39,6 +40,15 @@ def train(epochs, batch_size, hr_dir, tar_dir, hr_val_dir, tar_val_dir,encoder='
         preprocessing=get_preprocessing(preprocessing_fn),
         resize = resize()
     )
+    
+    test_dataset = Dataset(
+        hr_test_dir,
+        tar_test_dir,
+        augmentation=get_validation_augmentation(), 
+        preprocessing=get_preprocessing(preprocessing_fn),
+        resize = resize()
+    )
+    
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=True)#, drop_last=True)
 

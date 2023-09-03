@@ -1,7 +1,7 @@
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset as BaseDataset
 import cv2
-from .misc import normalize_data, list_img
+from .misc import tanh_fi, list_img
 import numpy as np
 import torch
 import os
@@ -72,7 +72,7 @@ class Dataset():
         target_image = target_image.unsqueeze(0)
         depth_low_res_image = depth_low_res_image.unsqueeze(0)
         
-        target_image = normalize_data(target_image)
+        target_image = tanh_fi(target_image)
         
         #target_image = target_image.repeat(3,1,1)
         #depth_low_res_image = depth_low_res_image.repeat(3,1,1)

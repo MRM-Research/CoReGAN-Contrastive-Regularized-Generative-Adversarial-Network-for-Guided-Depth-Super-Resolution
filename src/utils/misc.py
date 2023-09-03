@@ -2,12 +2,12 @@ import matplotlib.pyplot as plt
 import os
 
 # normalizing target image to be compatible with tanh activation function
-def normalize_data(data):
+def tan_fi(data):
     data *= 2
     data -= 1
     return data
 
-def unnormalize_data(data):
+def un_tan_fi(data):
     data += 1
     data /= 2
     return data
