@@ -15,8 +15,6 @@ def train(epochs,
           tar_dir, 
           hr_val_dir, 
           tar_val_dir, 
-          hr_test_dir,
-          tar_test_dir,
           encoder='resnet34', 
           encoder_weights='imagenet', 
           device='cuda', 
@@ -56,15 +54,15 @@ def train(epochs,
         resize = resize()
     )
     test_dataset = Dataset(
-        hr_test_dir,
-        tar_test_dir,
+        hr_val_dir,
+        tar_val_dir,
         augmentation=None, 
         preprocessing=get_preprocessing(preprocessing_fn),
         resize = resize()
     )
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=True)#, drop_last=True)
-    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)\
         
     loss = custom_loss(batch_size, beta=beta, loss_weight=loss_weight)
     loss_val = custom_loss_val(loss_weight=loss_weight)

@@ -25,11 +25,4 @@ def visualize(**images):
         plt.imshow(image)
     plt.show()
 
-def list_img(dir1):
-    lst = []
-    for root, dirs, files in os.walk(dir1):
-        lst.extend(files)
-    lst = sorted(lst)
-    for x in range(len(lst)):
-        lst[x]= dir1+ '/'+ lst[x]
-    return lst
+
