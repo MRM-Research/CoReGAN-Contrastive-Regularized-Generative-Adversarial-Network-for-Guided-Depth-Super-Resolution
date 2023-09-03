@@ -1,12 +1,10 @@
 import wandb
 import segmentation_models_pytorch as smp
 from .train_utils import TrainEpoch, ValidEpoch
-from .loss import custom_loss, custom_lossv
+from .loss import custom_loss #custom_lossv
 from .dataloader import Dataset
 from .transformations import get_training_augmentation, get_validation_augmentation, get_preprocessing,resize
 from .model import Unet
-from torchmetrics import StructuralSimilarityIndexMeasure
-from torchmetrics import PeakSignalNoiseRatio
 import torch
 from torch.utils.data import DataLoader
 def train(epochs, 
@@ -97,7 +95,7 @@ def train(epochs,
                     't_mse':train_logs['mse'],
                     'v_mse':valid_logs['mse'],
                     't_mae':train_logs['mae'],
-                    'v_mae':valid_logs['mae'],
+                    'v_mae':valid_logs['mae']
                     })
         # do something (save model, change lr, etc.)
         if min_mse >= valid_logs['mse']:
