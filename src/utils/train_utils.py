@@ -2,6 +2,46 @@ import sys
 import torch
 from tqdm import tqdm as tqdm
 import numpy as np
+import OrderedDict
+from torchmetrics import PeakSignalNoiseRatio
+from torch.optim.lr_scheduler import _LRScheduler as lr_scheduler
+from torch.nn import MSELoss
+from sklearn.metrics import mean_squared_error, mean_absolute_error
+
+from .loss import compute_gradient_penalty
+from .loss import GANLoss
+
+loss_dict = OrderedDict()
+
+def get_current_visuals(self):
+    out_dict = OrderedDict()
+    out_dict['Thermal_low_res'] = self.Thermal_low_res.detach().to(self.device)
+    out_dict['result'] = self.output.detach().to(self.device)
+    out_dict['RGB'] = self.RGB.detach().to(self.device)
+    if hasattr(self, 'Thermal_high_res'):
+        out_dict['Thermal_high_res'] = self.Thermal_high_res.detach().to(self.device)
+    return out_dict
+
+def calculate_metrics(self, img1, img2):
+            
+            
+            P = PeakSignalNoiseRatio().to(self.device)
+            # revert both images to 0, 1 from -1, 1
+            MSE_metric = mean_squared_error(img1, img2)
+            MAE_metric = mean_absolute_error(img1, img2)
+            
+            # for mse, mae check range of calc
+            # for psnr, x by 255
+            
+            img1 = img1*255
+            img1 = img1.round().int()
+            img1 = img1.float()
+
+            img2 = img2*255
+            img2 = img2.round().int()
+            img2 = img2.float()
+
+            return P(img1, img2).to(self.device), MSE_metric(img1, img2).to(self.device), MAE_metric(img1, img2).to(self.device)
 
 class Meter(object):
     """Meters provide a way to keep track of important statistics in an online manner.
@@ -96,7 +136,7 @@ class Epoch:
 
         logs = {}
         loss_meter = AverageValueMeter()
-        metrics_meters = {metric.__name__: AverageValueMeter() for metric in self.metrics}
+        metrics_meters = {"MSE": AverageValueMeter(), "MAE": AverageValueMeter(), "PSNR": AverageValueMeter()}
 
         with tqdm(
             dataloader,
@@ -104,9 +144,9 @@ class Epoch:
             file=sys.stdout,
             disable=not (self.verbose),
         ) as iterator:
-            for x,z, y in iterator:
-                x,z, y = x.to(self.device),z.to(self.device), y.to(self.device)
-                loss, y_pred = self.batch_update(x,z, y)
+            for x, z, y in iterator:
+                x, z, y = x.to(self.device), z.to(self.device), y.to(self.device)
+                loss, psnr, mae, mse = self.batch_update(x, z, y)
 
                 # update loss logs
                 loss_value = loss.cpu().detach().numpy()
@@ -115,9 +155,9 @@ class Epoch:
                 logs.update(loss_logs)
 
                 # update metrics logs
-                for metric_fn in self.metrics:
-                    metric_value = metric_fn(y_pred, y).cpu().detach().numpy()
-                    metrics_meters[metric_fn.__name__].add(metric_value)
+                metrics_meters["MSE"].add(mse.cpu().detach().numpy())
+                metrics_meters["MAE"].add(mae.cpu().detach().numpy())
+                metrics_meters["PSNR"].add(psnr.cpu().detach().numpy())
                 metrics_logs = {k: v.mean for k, v in metrics_meters.items()}
                 logs.update(metrics_logs)
 
@@ -144,17 +184,134 @@ class TrainEpoch(Epoch):
     def on_epoch_start(self):
         self.model.train()
 
-    def batch_update(self, x,z, y):
-        self.optimizer.zero_grad()
-        if self.contrastive:
-            prediction, ft1, ft2 = self.model.forward(x,z)
-            loss = self.loss(prediction, y, ft1, ft2)
-        else:
-            prediction = self.model.forward(x,z)
-            loss = self.loss(prediction, y)
-        loss.backward()
-        self.optimizer.step()
-        return loss, prediction
+    # OLD BATCH_UPDATE FUNCTION
+
+    # def batch_update(self, x,z, y):
+    #     self.optimizer.zero_grad()
+    #     if self.contrastive:
+    #         prediction, ft1, ft2 = self.model.forward(x,z)
+    #         loss = self.loss(prediction, y, ft1, ft2)
+    #     else:
+    #         prediction = self.model.forward(x,z)
+    #         loss = self.loss(prediction, y)
+    #     loss.backward()
+    #     self.optimizer.step()
+    #     return loss, prediction
+    
+    def batch_update(self, current_iter):
+    # def init_training_settings(self):
+        self.net_g.train()
+        self.net_d.train()
+
+        cri_pix_cls = MSELoss
+        self.cri_pix = cri_pix_cls(loss_weight=self.loss_weight, reduction='mean').to(self.device)
+        
+        cri_gan_cls = GANLoss
+        self.cri_gan = cri_gan_cls(gan_type='standard', real_label_val=1.0, fake_label_val=0.0, loss_weight=1).to(self.device)
+        self.gp_weight = 100
+
+        self.net_d_iters = 1
+        self.net_d_init_iters = 0
+
+        # set up optimizers and schedulers
+        # self.setup_optimizers()
+        # self.setup_schedulers()
+
+    # def setup_schedulers(self):
+
+        for optimizer in self.optimizers:
+            self.schedulers.append(
+                lr_scheduler.MultiStepRestartLR(optimizer, 
+                                                milestones=[50000, 100000, 200000, 300000], 
+                                                gamma=0.5))
+            
+    # def setup_optimizers(self):
+
+        optim_params = []
+        for v in self.net_g.named_parameters():
+            if v.requires_grad:
+                optim_params.append(v)
+
+        # optimizer g
+        self.optimizer_g = torch.optim.Adam(optim_params,
+                                                lr=0.0001, weight_decay=0, betas=[0.9, 0.99])                                 
+        # optimizer d
+        self.optimizer_d = torch.optim.Adam(optim_params,
+                                               lr=0.0001, weight_decay=0, betas=[0.9, 0.99])
+
+    # def optimize_parameters(self, current_iter):
+       
+        # optimize net_g
+        for p in self.net_d.parameters():
+            p.requires_grad = False
+        
+        # setting net_g gradients to zero
+        self.optimizer_g.zero_grad()
+
+        # generating output
+        self.output = self.net_g(self.RGB, self.depth_low_res)
+
+        l_g_total = 0
+        loss_dict = OrderedDict()           
+
+        if (current_iter % self.net_d_iters == 0 and current_iter > self.net_d_init_iters):
+            
+            # pixel loss
+            if self.cri_pix:
+                l_g_pix = self.cri_pix(self.output, self.depth_high_res)
+                l_g_total += l_g_pix
+                loss_dict['l_g_pix'] = l_g_pix
+
+            # gan loss
+            fake_g_pred = self.net_d(self.output)
+            l_g_gan = self.cri_gan(fake_g_pred, True, is_disc=False)
+            l_g_total += l_g_gan
+            loss_dict['l_g_gan'] = l_g_gan
+
+            # backprop for generator
+            l_g_total.backward()
+            self.optimizer_g.step()
+
+        # optimize net_d
+        for p in self.net_d.parameters():
+            p.requires_grad = True
+
+        # setting net_d gradients to zero
+        self.optimizer_d.zero_grad()
+
+        # generating output
+        self.output = self.net_g(self.RGB, self.depth_low_res)
+        
+        # real image generation
+        real_d_pred = self.net_d(self.depth_high_res)
+        l_d_real = self.cri_gan(real_d_pred, True, is_disc=True)
+        loss_dict['l_d_real'] = l_d_real
+        loss_dict['out_d_real'] = torch.mean(real_d_pred.detach())
+
+        # fake image generation
+        fake_d_pred = self.net_d(self.output)
+        l_d_fake = self.cri_gan(fake_d_pred, False, is_disc=True)
+        loss_dict['l_d_fake'] = l_d_fake
+        loss_dict['out_d_fake'] = torch.mean(fake_d_pred.detach())
+
+        # gradient penalty for discriminator
+        gradient_penalty = compute_gradient_penalty(self.net_d, self.depth_high_res, self.output, self.device)
+        l_d = l_d_real + l_d_fake + (self.gp_weight * gradient_penalty)
+
+        # backprop for discriminator
+        l_d.backward()
+        self.optimizer_d.step()       
+        
+        visuals = self.get_current_visuals()
+        input_img = visuals['RGB'] 
+        result_img = visuals['result']
+        if 'depth_high_res' in visuals:
+            DHR_img = visuals['depth_high_res']
+            del self.Thermal_high_res
+      
+        psnr, mse_metric, mae_metric = self.calculate_metrics(result_img, DHR_img)   
+
+        return l_g_total, psnr, mse_metric, mae_metric
 
 
 class ValidEpoch(Epoch):
