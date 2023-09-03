@@ -2,6 +2,7 @@ import sys
 import torch
 from tqdm import tqdm as tqdm
 import numpy as np
+from misc import un_tan_fi
 from collections import OrderedDict
 from torchmetrics import PeakSignalNoiseRatio, StructuralSimilarityIndexMeasure
 from torch.optim.lr_scheduler import _LRScheduler as lr_scheduler
@@ -27,6 +28,9 @@ Z = StructuralSimilarityIndexMeasure()
 
 def calculate_metrics(self, img1, img2):
     # revert both images to 0, 1 from -1, 1
+    img1 = un_tan_fi(img1)
+    img2 = un_tan_fi(img2)
+    
     MSE_metric = mean_squared_error(img1, img2)
     MAE_metric = mean_absolute_error(img1, img2)
     
