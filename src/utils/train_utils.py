@@ -3,7 +3,7 @@ import torch
 from tqdm import tqdm as tqdm
 import numpy as np
 import OrderedDict
-from torchmetrics import PeakSignalNoiseRatio
+from torchmetrics import PeakSignalNoiseRatio, StructuralSimilarityIndexMeasure
 from torch.optim.lr_scheduler import _LRScheduler as lr_scheduler
 from torch.nn import MSELoss
 from sklearn.metrics import mean_squared_error, mean_absolute_error
@@ -26,6 +26,7 @@ def calculate_metrics(self, img1, img2):
             
             
             P = PeakSignalNoiseRatio().to(self.device)
+            Z = StructuralSimilarityIndexMeasure().to(self.device)
             # revert both images to 0, 1 from -1, 1
             MSE_metric = mean_squared_error(img1, img2)
             MAE_metric = mean_absolute_error(img1, img2)
@@ -41,7 +42,7 @@ def calculate_metrics(self, img1, img2):
             img2 = img2.round().int()
             img2 = img2.float()
 
-            return P(img1, img2).to(self.device), MSE_metric(img1, img2).to(self.device), MAE_metric(img1, img2).to(self.device)
+            return P(img1, img2).to(self.device), Z(img1, img2).to(self.device), MSE_metric(img1, img2).to(self.device), MAE_metric(img1, img2).to(self.device)
 
 class Meter(object):
     """Meters provide a way to keep track of important statistics in an online manner.
@@ -103,11 +104,8 @@ class AverageValueMeter(Meter):
 
 
 class Epoch:
-    
     def __init__(self, model, loss, metrics, stage_name, device="cpu", verbose=True):
         self.model = model
-        self.loss = loss
-        self.metrics = metrics
         self.stage_name = stage_name
         self.verbose = verbose
         self.device = device
@@ -137,7 +135,7 @@ class Epoch:
 
         logs = {}
         loss_meter = AverageValueMeter()
-        metrics_meters = {"MSE": AverageValueMeter(), "MAE": AverageValueMeter(), "PSNR": AverageValueMeter()}
+        metrics_meters = {"MSE": AverageValueMeter(), "MAE": AverageValueMeter(), "PSNR": AverageValueMeter(), "SSIM": AverageValueMeter()}
 
         with tqdm(
             dataloader,
@@ -147,7 +145,7 @@ class Epoch:
         ) as iterator:
             for x, z, y in iterator:
                 x, z, y = x.to(self.device), z.to(self.device), y.to(self.device)
-                loss, psnr, mae, mse = self.batch_update(x, z, y)
+                loss, ssim, psnr, mae, mse = self.batch_update(x, z, y)
 
                 # update loss logs
                 loss_value = loss.cpu().detach().numpy()
@@ -159,6 +157,8 @@ class Epoch:
                 metrics_meters["MSE"].add(mse.cpu().detach().numpy())
                 metrics_meters["MAE"].add(mae.cpu().detach().numpy())
                 metrics_meters["PSNR"].add(psnr.cpu().detach().numpy())
+                metrics_meters["SSIM"].add(ssim.cpu().detach().numpy())
+
                 metrics_logs = {k: v.mean for k, v in metrics_meters.items()}
                 logs.update(metrics_logs)
 
@@ -170,40 +170,21 @@ class Epoch:
 
 
 class TrainEpoch(Epoch):
-    def __init__(self, model, loss, metrics, optimizer, device="cpu", verbose=True, contrastive=False):
+    def __init__(self, model, device="cpu", verbose=True, contrastive=False):
         super().__init__(
             model=model,
-            loss=loss,
-            metrics=metrics,
             stage_name="train",
             device=device,
             verbose=verbose
         )
-        self.optimizer = optimizer
         self.contrastive = contrastive
 
     def on_epoch_start(self):
-        self.model.train()
-
-    # OLD BATCH_UPDATE FUNCTION
-
-    # def batch_update(self, x,z, y):
-    #     self.optimizer.zero_grad()
-    #     if self.contrastive:
-    #         prediction, ft1, ft2 = self.model.forward(x,z)
-    #         loss = self.loss(prediction, y, ft1, ft2)
-    #     else:
-    #         prediction = self.model.forward(x,z)
-    #         loss = self.loss(prediction, y)
-    #     loss.backward()
-    #     self.optimizer.step()
-    #     return loss, prediction
-    
-    def batch_update(self, current_iter):
-    # def init_training_settings(self):
         self.net_g.train()
         self.net_d.train()
-
+    
+    def batch_update(self, current_iter):
+       
         cri_pix_cls = MSELoss
         self.cri_pix = cri_pix_cls(loss_weight=self.loss_weight, reduction='mean').to(self.device)
         
@@ -214,19 +195,11 @@ class TrainEpoch(Epoch):
         self.net_d_iters = 1
         self.net_d_init_iters = 0
 
-        # set up optimizers and schedulers
-        # self.setup_optimizers()
-        # self.setup_schedulers()
-
-    # def setup_schedulers(self):
-
         for optimizer in self.optimizers:
             self.schedulers.append(
                 lr_scheduler.MultiStepRestartLR(optimizer, 
                                                 milestones=[50000, 100000, 200000, 300000], 
                                                 gamma=0.5))
-            
-    # def setup_optimizers(self):
 
         optim_params = []
         for v in self.net_g.named_parameters():
@@ -240,9 +213,6 @@ class TrainEpoch(Epoch):
         self.optimizer_d = torch.optim.Adam(optim_params,
                                                lr=0.0001, weight_decay=0, betas=[0.9, 0.99])
 
-    # def optimize_parameters(self, current_iter):
-       
-        # optimize net_g
         for p in self.net_d.parameters():
             p.requires_grad = False
         
@@ -310,17 +280,15 @@ class TrainEpoch(Epoch):
             DHR_img = visuals['depth_high_res']
             del self.Thermal_high_res
       
-        psnr, mse_metric, mae_metric = self.calculate_metrics(result_img, DHR_img)   
+        psnr, ssim, mse_metric, mae_metric = self.calculate_metrics(result_img, DHR_img)   
 
-        return l_g_total, psnr, mse_metric, mae_metric
+        return l_g_total, psnr, ssim, mse_metric, mae_metric
 
 
 class ValidEpoch(Epoch):
-    def __init__(self, model, loss, metrics, device="cpu", verbose=True, contrastive=False):
+    def __init__(self, model, device="cpu", verbose=True, contrastive=False):
         super().__init__(
             model=model,
-            loss=loss,
-            metrics=metrics,
             stage_name="valid",
             device=device,
             verbose=verbose,
