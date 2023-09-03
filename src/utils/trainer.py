@@ -1,12 +1,14 @@
 import wandb
 import segmentation_models_pytorch as smp
 from .train_utils import TrainEpoch, ValidEpoch
-from .loss import custom_loss #custom_lossv
+from .loss import custom_loss, custom_loss_val
 from .dataloader import Dataset
 from .transformations import get_training_augmentation, get_validation_augmentation, get_preprocessing,resize
 from .model import Unet
 import torch
 from torch.utils.data import DataLoader
+from .model import Discriminator
+
 def train(epochs, 
           batch_size, 
           hr_dir, 
@@ -35,6 +37,8 @@ def train(epochs,
         contrastive=True,
     )
 
+    disc = Discriminator()
+
     preprocessing_fn = smp.encoders.get_preprocessing_fn(encoder, encoder_weights)
 
     train_dataset = Dataset(
@@ -60,24 +64,21 @@ def train(epochs,
     )
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=True)#, drop_last=True)
-    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)\
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
         
     loss = custom_loss(batch_size, beta=beta, loss_weight=loss_weight)
+    loss_val = custom_loss_val(loss_weight=loss_weight)
 
-    optimizer = torch.optim.Adam([ 
-        dict(params=model.parameters(), lr=lr),
-    ])
     # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer,250)
     train_epoch = TrainEpoch(
-        model, 
-        loss=loss, 
-        optimizer=optimizer,
+        model=model,
+        discriminator=disc,  
         device=device,
         verbose=True,
         contrastive=True
     )
     valid_epoch = ValidEpoch(
-        model, 
+        model=model, 
         loss=loss, 
         device=device,
         verbose=True,
@@ -97,7 +98,7 @@ def train(epochs,
         print(train_logs)
         wandb.log({'epoch':i+1,
                     't_loss':train_logs['custom_loss'],
-                    'v_loss':valid_logs['custom_lossv'],
+                    'v_loss':valid_logs['custom_loss_val'],
                     't_ssim':train_logs['ssim'],
                     'v_ssim':valid_logs['ssim'],
                     't_psnr':train_logs['psnr'],

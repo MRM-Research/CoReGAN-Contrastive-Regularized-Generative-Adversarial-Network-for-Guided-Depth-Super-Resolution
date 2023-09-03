@@ -194,17 +194,12 @@ def compute_gradient_penalty(D, real_samples, fake_samples, device):
     return gradient_penalty
 
 class custom_loss(base.Loss):
-    def __init__(self, batch_size, beta, loss_weight=0.5):
+    def __init__(self, batch_size, beta=0.5, loss_weight=0.5):
         super().__init__()
-        
-        # metrics
-        # self.ssim = StructuralSimilarityIndexMeasure()
-        # self.psnr = PeakSignalNoiseRatio()
-        self.L1 = nn.L1Loss()
-        self.mse = nn.MSELoss() # metric and loss
-        # losses
+
         self.contrast = ContrastiveLoss(batch_size)
         self.GANLoss = GANLoss
+        self.mse = nn.MSELoss()
         
         self.loss_weight = loss_weight
         self.beta = beta
@@ -222,4 +217,28 @@ class custom_loss(base.Loss):
         m = self.mse(y_pr, y_gt)
 
         return (self.beta)*c + (self.loss_weight)*m + (1-self.loss_weight)*g
+    
+class custom_loss_val(base.Loss):
+    """
+    Custom loss function for validation which DOESNT use contrastive loss.
+    This is because contrastive loss is not differentiable.
+    """
+    def __init__(self, loss_weight=0.5):
+        super().__init__()
+
+        self.GANLoss = GANLoss
+        self.mse = nn.MSELoss()
+        
+        self.loss_weight = loss_weight
+
+    def forward(self, y_pr, y_gt):
+        """
+        Args:
+            y_pr: predicted image
+            y_gt: ground truth image
+        """
+        g = self.GANLoss(y_pr, y_gt, is_disc=False)
+        m = self.mse(y_pr, y_gt)
+
+        return (self.loss_weight)*m + (1-self.loss_weight)*g
         
