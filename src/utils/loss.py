@@ -163,50 +163,11 @@ class GANLoss(nn.Module):
                     loss = torch.mean(input)
             else:
                 loss = -torch.mean(input)
-        elif self.gan_type == 'hinge':
-            if is_disc:  # for discriminators in hinge-gan
-                input = -input if target_is_real else input
-                loss = self.loss(1 + input).mean()
-            else:  # for generators in hinge-gan
-                loss = -input.mean()
         else:  # other gan types
             loss = self.loss(input, target_label)
 
         # loss_weight is always 1.0 for discriminators
         return loss if is_disc else loss * self.loss_weight
-
-def r1_penalty(real_pred, real_img):
-    """R1 regularization for discriminator. The core idea is to
-        penalize the gradient on real data alone: when the
-        generator distribution produces the true data distribution
-        and the discriminator is equal to 0 on the data manifold, the
-        gradient penalty ensures that the discriminator cannot create
-        a non-zero gradient orthogonal to the data manifold without
-        suffering a loss in the GAN game.
-
-        Ref:
-        Eq. 9 in Which training methods for GANs do actually converge.
-        """
-    grad_real = autograd.grad(
-        outputs=real_pred.sum(), inputs=real_img, create_graph=True)[0]
-    grad_penalty = grad_real.pow(2).view(grad_real.shape[0], -1).sum(1).mean()
-    return grad_penalty
-
-
-def g_path_regularize(fake_img, latents, mean_path_length, decay=0.01):
-    noise = torch.randn_like(fake_img) / math.sqrt(
-        fake_img.shape[2] * fake_img.shape[3])
-    grad = autograd.grad(
-        outputs=(fake_img * noise).sum(), inputs=latents, create_graph=True)[0]
-    path_lengths = torch.sqrt(grad.pow(2).sum(2).mean(1))
-
-    path_mean = mean_path_length + decay * (
-        path_lengths.mean() - mean_path_length)
-
-    path_penalty = (path_lengths - path_mean).pow(2).mean()
-
-    return path_penalty, path_lengths.detach().mean(), path_mean.detach()
-
 
 def compute_gradient_penalty(D, real_samples, fake_samples, device):
 
@@ -233,23 +194,32 @@ def compute_gradient_penalty(D, real_samples, fake_samples, device):
     return gradient_penalty
 
 class custom_loss(base.Loss):
-    def __init__(self, batch_size, loss_weight=0.5):
+    def __init__(self, batch_size, beta, loss_weight=0.5):
         super().__init__()
         
         # metrics
         # self.ssim = StructuralSimilarityIndexMeasure()
         # self.psnr = PeakSignalNoiseRatio()
         self.L1 = nn.L1Loss()
-        self.mse = nn.MSELoss()
+        self.mse = nn.MSELoss() # metric and loss
         # losses
         self.contrast = ContrastiveLoss(batch_size)
         self.GANLoss = GANLoss
         
         self.loss_weight = loss_weight
+        self.beta = beta
 
     def forward(self, y_pr, y_gt, ft1=None, ft2=None):
+        """
+        Args:
+            y_pr: predicted image
+            y_gt: ground truth image
+            ft1: feature map of predicted image
+            ft2: feature map of ground truth image
+        """
         c = self.contrast(ft1, ft2)
         g = self.GANLoss(y_pr, y_gt, is_disc=False)
+        m = self.mse(y_pr, y_gt)
 
-        return (self.loss_weight)*c + (1-self.loss_weight)*g
+        return (self.beta)*c + (self.loss_weight)*m + (1-self.loss_weight)*g
         
