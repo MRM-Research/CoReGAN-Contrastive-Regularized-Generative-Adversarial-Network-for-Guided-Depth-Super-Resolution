@@ -45,7 +45,7 @@ def calculate_metrics(self, img1, img2):
     img2 = img2.round().int()
     img2 = img2.float()
 
-    return P(img1, img2).to(self.device), Z(img1, img2).to(self.device), MSE_metric(img1, img2).to(self.device), MAE_metric(img1, img2).to(self.device)
+    return P(img1, img2).to(self.device), Z(img1, img2).to(self.device), MSE_metric.to(self.device), MAE_metric.to(self.device)
 
 class Meter(object):
     """Meters provide a way to keep track of important statistics in an online manner.

@@ -35,13 +35,7 @@ def get_training_augmentation():
 #         ),
     ]
     return albu.Compose(train_transform,additional_targets={'image1':'mask'})
-    
-def get_validation_augmentation():
-    test_transform = [
-        albu.Resize(480,640,always_apply=True),
-        #albu.PadIfNeeded(480,640)
-    ]
-    return albu.Compose(test_transform,additional_targets={'image1':'mask'})
+
 
 def resize():
     return albu.Compose([
