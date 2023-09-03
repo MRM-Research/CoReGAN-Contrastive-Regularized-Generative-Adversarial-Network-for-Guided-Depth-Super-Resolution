@@ -72,6 +72,8 @@ class Dataset():
         target_image = target_image.unsqueeze(0)
         depth_low_res_image = depth_low_res_image.unsqueeze(0)
         
+        target_image = normalize_data(target_image)
+        
         #target_image = target_image.repeat(3,1,1)
         #depth_low_res_image = depth_low_res_image.repeat(3,1,1)
         
