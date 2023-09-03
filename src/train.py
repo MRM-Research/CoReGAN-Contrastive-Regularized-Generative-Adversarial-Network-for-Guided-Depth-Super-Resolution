@@ -20,8 +20,16 @@ def main(args):
         'loss_weight': args.loss_weight
     }
     wandb.init(project="DepthMapSR", entity="kasliwal17",
-               config={'model':'resnet34 d5','beta':args.beta, 'fusion_technique':'img 2 encoders max tanh x+beta*z+y/10+p/10 saving:ssim',
-                'lr':args.lr, 'max_ssim':0, 'max_psnr':0}, allow_val_change=True)
+               config={'beta':args.beta, 
+                       'lr':args.lr, 
+                       'max_ssim':0,
+                       'max_psnr':0, 
+                       'min_mse': 1e6, 
+                       'min_mae': 1e6, 
+                       'loss_weight': args.loss_weight, 
+                       'encoder':args.encoder,
+                       'BS': args.batch_size
+                       }, allow_val_change=True)
     train_model(config)
 
 if __name__ == '__main__':
@@ -33,7 +41,7 @@ if __name__ == '__main__':
     parser.add_argument('--hr_val_dir', type=str, required=False, default='./Dataset/train_val/validation/valid_VIS_HR')
     parser.add_argument('--th_val_dir', type=str, required=False, default='./Dataset/train_val/validation/valid_input_THER_LR_bicubic/X8')
     parser.add_argument('--tar_val_dir', type=str, required=False, default='./Dataset/train_val/validation/valid_output_gt_THER_HR')
-    parser.add_argument('--batch_size', type=int, required=False, default=8)
+    parser.add_argument('--batch_size', type=int, required=False, default=16)
     parser.add_argument('--epochs', type=int, required=False, default=250)
     parser.add_argument('--device', type=str, required=False, default='cuda')
     parser.add_argument('--encoder', type=str, required=False, default='resnet34')
