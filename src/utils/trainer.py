@@ -15,6 +15,8 @@ def train(epochs,
           tar_dir, 
           hr_val_dir, 
           tar_val_dir, 
+          hr_test_dir,
+          tar_test_dir,
           encoder='resnet34', 
           encoder_weights='imagenet', 
           device='cuda', 
@@ -54,8 +56,8 @@ def train(epochs,
         resize = resize()
     )
     test_dataset = Dataset(
-        hr_val_dir,
-        tar_val_dir,
+        hr_test_dir,
+        tar_test_dir,
         augmentation=None, 
         preprocessing=get_preprocessing(preprocessing_fn),
         resize = resize()
@@ -120,7 +122,7 @@ def train(epochs,
 def train_model(configs):
     train(configs['epochs'], configs['batch_size'], configs['hr_dir'],
          configs['tar_dir'], configs['th_dir'], configs['hr_val_dir'],
-         configs['tar_val_dir'], configs['th_val_dir'], configs['encoder'],
+         configs['tar_val_dir'], configs['hr_test_dir'],configs['tar_test_dir'], configs['encoder'],
          configs['encoder_weights'], configs['device'], configs['lr'], configs['beta'], configs['loss_weight'])
     
 # 2. In metrics, change back to 0, 1 from -1, 1 , rest remains the same - dont clamp --> aryan

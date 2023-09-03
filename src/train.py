@@ -6,6 +6,10 @@ def main(args):
     config = {
         'hr_dir': args.hr_dir,
         'tar_dir': args.tar_dir,
+        'hr_val_dir':args.hr_val_dir,
+        'tar_val_dir':args.tar_val_dir,
+        'hr_test_dir':args.hr_test_dir,
+        'tar_test_dir':args.tar_test_dir,
         'batch_size': args.batch_size,
         'epochs': args.epochs,
         'device':args.device,
@@ -34,8 +38,9 @@ if __name__ == '__main__':
     parser.add_argument('--hr_dir', type=str, required=False, default='./Dataset/train_val/training/train_VIS_HR')
     parser.add_argument('--tar_dir', type=str, required=False, default='./Dataset/train_val/training/train_output_gt_THER_HR')
     parser.add_argument('--hr_val_dir', type=str, required=False, default='./Dataset/train_val/validation/valid_VIS_HR')
-    parser.add_argument('--th_val_dir', type=str, required=False, default='./Dataset/train_val/validation/valid_input_THER_LR_bicubic/X8')
-    parser.add_argument('--tar_val_dir', type=str, required=False, default='./Dataset/train_val/validation/valid_output_gt_THER_HR')
+    parser.add_argument('--tar_val_dir', type=str, required=False, default='./Dataset/train_val/validation/valid_input_THER_LR_bicubic/X8')
+    parser.add_argument('--hr_test_dir', type=str, required=False, default='./Dataset/train_val/validation/valid_output_gt_THER_HR')
+    parser.add_argument('--tar_test_dir', type=str, required=False, default='./Dataset/train_val/validation/valid_output_gt_THER_HR')
     parser.add_argument('--batch_size', type=int, required=False, default=8)
     parser.add_argument('--epochs', type=int, required=False, default=250)
     parser.add_argument('--device', type=str, required=False, default='cuda')
