@@ -75,9 +75,10 @@ def train(epochs, batch_size, hr_dir, tar_dir, hr_val_dir, tar_val_dir,encoder='
         contrastive=True
     )
 
+    min_mse = 0
+    min_mae = 0
     max_ssim = 0
     max_psnr = 0
-    counter = 0
     for i in range(0, epochs):
         
         print('\nEpoch: {}'.format(i))
@@ -93,8 +94,6 @@ def train(epochs, batch_size, hr_dir, tar_dir, hr_val_dir, tar_val_dir,encoder='
             wandb.config.update({'max_ssim':max_ssim, 'max_psnr':max_psnr}, allow_val_change=True)
             torch.save(model.state_dict(), './best_model.pth')
             print('Model saved!')
-            counter = 0
-        counter = counter+1
     print(f'max ssim: {max_ssim} max psnr: {max_psnr}')
 
 def train_model(configs):
