@@ -2,16 +2,12 @@ import albumentations as albu
 
 def get_training_augmentation():
     train_transform = [
+        
         albu.HorizontalFlip(p=0.5),
         albu.VerticalFlip(p=0.5),
 
 #         albu.ShiftScaleRotate(scale_limit=0.5, rotate_limit=0, shift_limit=0.1, p=0.5, border_mode=0),
         
-#         albu.RandomCrop(height=512, width=512),
-#         albu.ColorJitter(p=0.5),
-#         albu.IAAAdditiveGaussianNoise(p=0.2),
-#         albu.IAAPerspective(p=0.5),
-        albu.PadIfNeeded(min_height=480, min_width=640, always_apply=True, border_mode=0),
 #         albu.OneOf(
 #             [
 #                 albu.CLAHE(p=1),
@@ -43,13 +39,14 @@ def get_training_augmentation():
 def get_validation_augmentation():
     test_transform = [
         albu.Resize(480,640,always_apply=True),
-        albu.PadIfNeeded(480,640)
+        #albu.PadIfNeeded(480,640)
     ]
     return albu.Compose(test_transform,additional_targets={'image1':'mask'})
 
 def resize():
     return albu.Compose([
-        albu.Resize(120,160, p = 1),
+        albu.HorizontalFlip(p=0.5),
+        albu.VerticalFlip(p=0.5),
         # Add more augmentations as needed
     ])
 

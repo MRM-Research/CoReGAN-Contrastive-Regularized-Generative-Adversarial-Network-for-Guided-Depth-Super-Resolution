@@ -3,7 +3,7 @@ import torch
 from tqdm import tqdm as tqdm
 import numpy as np
 from collections import OrderedDict
-from torchmetrics import PeakSignalNoiseRatio
+from torchmetrics import PeakSignalNoiseRatio,StructuralSimilarityIndexMeasure
 from torch.optim.lr_scheduler import _LRScheduler as lr_scheduler
 from torch.nn import MSELoss
 from sklearn.metrics import mean_squared_error, mean_absolute_error
