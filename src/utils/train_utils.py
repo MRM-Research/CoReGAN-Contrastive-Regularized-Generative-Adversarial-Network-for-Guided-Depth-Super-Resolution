@@ -4,13 +4,12 @@ from tqdm import tqdm as tqdm
 import numpy as np
 from collections import OrderedDict
 from torchmetrics import PeakSignalNoiseRatio, StructuralSimilarityIndexMeasure
-from torch.optim.lr_scheduler import _LRScheduler as lr_scheduler
 from torch.nn import MSELoss
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 
 from .loss import compute_gradient_penalty
 from .loss import GANLoss
-
+import lr_scheduler
 loss_dict = OrderedDict()
 
 def get_current_visuals(self):
@@ -111,6 +110,8 @@ class Epoch:
         self.device = device
 
         self._to_device()
+        self.GLoss = GANLoss
+        self.MLoss = MSELoss
 
     def _to_device(self):
         self.model.to(self.device)
@@ -168,7 +169,6 @@ class Epoch:
 
         return logs
 
-
 class TrainEpoch(Epoch):
     def __init__(self, model, optimizer, device="cpu", verbose=True, contrastive=False):
         super().__init__(
@@ -186,10 +186,12 @@ class TrainEpoch(Epoch):
     
     def batch_update(self, current_iter):
        
-        cri_pix_cls = MSELoss
+        # initiliazing MSELoss from Epoch
+        cri_pix_cls = self.MLoss
         self.cri_pix = cri_pix_cls(loss_weight=self.loss_weight, reduction='mean').to(self.device)
         
-        cri_gan_cls = GANLoss
+        # initializing GANLoss from Epoch
+        cri_gan_cls = self.GLoss
         self.cri_gan = cri_gan_cls(gan_type='standard', real_label_val=1.0, fake_label_val=0.0, loss_weight=1).to(self.device)
         self.gp_weight = 100
 
@@ -285,16 +287,16 @@ class TrainEpoch(Epoch):
 
         return l_g_total, psnr, ssim, mse_metric, mae_metric
 
-
 class ValidEpoch(Epoch):
-    def __init__(self, model, device="cpu", verbose=True, contrastive=False):
+    def __init__(self, model, optimizer, device="cpu", verbose=True, contrastive=False):
         super().__init__(
             model=model,
             stage_name="valid",
             device=device,
-            verbose=verbose,
+            verbose=verbose,           
         )
-        self.contrastive =contrastive
+        self.contrastive = contrastive
+        self.optimizer = optimizer,
 
     def on_epoch_start(self):
         self.model.eval()
