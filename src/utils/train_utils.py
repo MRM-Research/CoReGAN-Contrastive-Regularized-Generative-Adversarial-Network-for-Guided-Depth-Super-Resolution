@@ -107,9 +107,8 @@ class AverageValueMeter(Meter):
 
 
 class Epoch:
-    def __init__(self, model, discriminator, stage_name, device="cpu", verbose=True):
+    def __init__(self, model, stage_name, device="cpu", verbose=True):
         self.net_g = model
-        self.net_d = discriminator
         self.stage_name = stage_name
         self.verbose = verbose
         self.device = device
@@ -175,15 +174,22 @@ class Epoch:
         return logs
 
 class TrainEpoch(Epoch):
-    def __init__(self, model, optimizer, device="cpu", verbose=True, contrastive=False):
+    def __init__(self, model, discriminator, device="cpu", verbose=True, contrastive=True):
         super().__init__(
             model=model,
             stage_name="train",
             device=device,
             verbose=verbose
         )
+        self.net_g = model
+        self.net_d = discriminator
         self.contrastive = contrastive
-        self.optimizer = optimizer
+
+        self.optimizer_g = torch.optim.Adam(self.net_g.parameters(),
+                                    lr=0.0001, weight_decay=0, betas=[0.9, 0.99])
+
+        self.optimizer_d = torch.optim.Adam(self.net_d.parameters(),
+                                    lr=0.0001, weight_decay=0, betas=[0.9, 0.99])
 
     def on_epoch_start(self):
         self.net_g.train()
@@ -208,18 +214,6 @@ class TrainEpoch(Epoch):
                 lr_scheduler.MultiStepRestartLR(optimizer, 
                                                 milestones=[50000, 100000, 200000, 300000], 
                                                 gamma=0.5))
-
-        optim_params = []
-        for v in self.net_g.named_parameters():
-            if v.requires_grad:
-                optim_params.append(v)
-
-        # optimizer g
-        self.optimizer_g = torch.optim.Adam(optim_params,
-                                                lr=0.0001, weight_decay=0, betas=[0.9, 0.99])                                 
-        # optimizer d
-        self.optimizer_d = torch.optim.Adam(optim_params,
-                                               lr=0.0001, weight_decay=0, betas=[0.9, 0.99])
 
         for p in self.net_d.parameters():
             p.requires_grad = False
@@ -304,14 +298,97 @@ class ValidEpoch(Epoch):
         self.optimizer = optimizer,
 
     def on_epoch_start(self):
-        self.model.eval()
+        self.net_g.eval()
 
-    def batch_update(self, x,z, y):
-        with torch.no_grad():
-            if self.contrastive:
-                prediction, ft1, ft2 = self.model.forward(x,z)
-                loss = self.loss(prediction, y, ft1, ft2)
-            else:
-                prediction = self.model.forward(x,z)
-                loss = self.loss(prediction, y)
-        return loss, prediction
+    # def batch_update(self, x,z, y):
+    #     with torch.no_grad():
+    #         if self.contrastive:
+    #             prediction, ft1, ft2 = self.model.forward(x,z)
+    #             loss = self.loss(prediction, y, ft1, ft2)
+    #         else:
+    #             prediction = self.model.forward(x,z)
+    #             loss = self.loss(prediction, y)
+    #     return loss, prediction
+
+    def batch_update(self, current_iter):
+       
+        # initiliazing MSELoss from Epoch
+        cri_pix_cls = self.MLoss
+        self.cri_pix = cri_pix_cls(loss_weight=self.loss_weight, reduction='mean').to(self.device)
+        
+        # initializing GANLoss from Epoch
+        cri_gan_cls = self.GLoss
+        self.cri_gan = cri_gan_cls(gan_type='standard', real_label_val=1.0, fake_label_val=0.0, loss_weight=1).to(self.device)
+        self.gp_weight = 100
+
+        self.net_d_iters = 1
+        self.net_d_init_iters = 0
+
+        for optimizer in self.optimizers:
+            self.schedulers.append(
+                lr_scheduler.MultiStepRestartLR(optimizer, 
+                                                milestones=[50000, 100000, 200000, 300000], 
+                                                gamma=0.5))
+
+        for p in self.net_d.parameters():
+            p.requires_grad = False
+        
+        # setting net_g gradients to zero
+        self.optimizer_g.zero_grad()
+
+        # generating output
+        self.output = self.net_g(self.RGB, self.depth_low_res)
+
+        l_g_total = 0
+        loss_dict = OrderedDict()           
+
+        if (current_iter % self.net_d_iters == 0 and current_iter > self.net_d_init_iters):
+            
+            # pixel loss
+            if self.cri_pix:
+                l_g_pix = self.cri_pix(self.output, self.depth_high_res)
+                l_g_total += l_g_pix
+                loss_dict['l_g_pix'] = l_g_pix
+
+            # gan loss
+            fake_g_pred = self.net_d(self.output)
+            l_g_gan = self.cri_gan(fake_g_pred, True, is_disc=False)
+            l_g_total += l_g_gan
+            loss_dict['l_g_gan'] = l_g_gan
+
+        # optimize net_d
+        for p in self.net_d.parameters():
+            p.requires_grad = True
+
+        # setting net_d gradients to zero
+        self.optimizer_d.zero_grad()
+
+        # generating output
+        self.output = self.net_g(self.RGB, self.depth_low_res)
+        
+        # real image generation
+        real_d_pred = self.net_d(self.depth_high_res)
+        l_d_real = self.cri_gan(real_d_pred, True, is_disc=True)
+        loss_dict['l_d_real'] = l_d_real
+        loss_dict['out_d_real'] = torch.mean(real_d_pred.detach())
+
+        # fake image generation
+        fake_d_pred = self.net_d(self.output)
+        l_d_fake = self.cri_gan(fake_d_pred, False, is_disc=True)
+        loss_dict['l_d_fake'] = l_d_fake
+        loss_dict['out_d_fake'] = torch.mean(fake_d_pred.detach())
+
+        # gradient penalty for discriminator
+        gradient_penalty = compute_gradient_penalty(self.net_d, self.depth_high_res, self.output, self.device)
+        l_d = l_d_real + l_d_fake + (self.gp_weight * gradient_penalty)     
+        
+        visuals = self.get_current_visuals()
+        input_img = visuals['RGB'] 
+        result_img = visuals['result']
+        if 'depth_high_res' in visuals:
+            DHR_img = visuals['depth_high_res']
+            del self.Thermal_high_res
+      
+        psnr, ssim, mse_metric, mae_metric = self.calculate_metrics(result_img, DHR_img)   
+
+        return l_g_total, psnr, ssim, mse_metric, mae_metric
