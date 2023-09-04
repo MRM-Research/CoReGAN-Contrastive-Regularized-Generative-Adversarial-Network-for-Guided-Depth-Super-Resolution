@@ -119,8 +119,8 @@ class Epoch:
 
     def _to_device(self):
         self.net_g.to(self.device)
-        self.Gloss.to(self.device)
-        self.Gloss.to(self.device)
+        self.GLoss.to(self.device)
+        self.MLoss.to(self.device)
 
     def _format_logs(self, logs):
         str_logs = ["{} - {:.4}".format(k, v) for k, v in logs.items()]
