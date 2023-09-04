@@ -1,13 +1,10 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torchmetrics import StructuralSimilarityIndexMeasure
-from torchmetrics import PeakSignalNoiseRatio
 from segmentation_models_pytorch.utils import base
 import autograd
 from torch.autograd import Variable
 import numpy as np
-import math
 
 def device_as(t1, t2):
     """

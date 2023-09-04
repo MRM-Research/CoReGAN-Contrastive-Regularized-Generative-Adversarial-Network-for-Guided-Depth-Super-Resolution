@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-import os
 
 # normalizing target image to be compatible with tanh activation function
 def tan_fi(data):
