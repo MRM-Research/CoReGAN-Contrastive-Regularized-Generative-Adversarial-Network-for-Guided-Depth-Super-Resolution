@@ -1,5 +1,5 @@
 import argparse
-from .utils.trainer import train_model
+from utils.trainer import train_model
 import wandb
 
 def main(args):
@@ -30,7 +30,7 @@ def main(args):
                        'loss_weight': args.loss_weight, 
                        'encoder':args.encoder,
                        'BS': args.batch_size,
-                       'GAN_TYPE': args.gan_type
+                       'gan_type': args.gan_type
                        }, allow_val_change=True)
     train_model(config)
 
