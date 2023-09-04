@@ -174,12 +174,13 @@ class Epoch:
         return logs
 
 class TrainEpoch(Epoch):
-    def __init__(self, model, discriminator, device="cpu", verbose=True, contrastive=True):
+    def __init__(self, model, discriminator, device="cpu", verbose=True, contrastive=True,gan_type = "standard"):
         super().__init__(
             model=model,
+            gan_type = gan_type,
             stage_name="train",
             device=device,
-            verbose=verbose
+            verbose=verbose,
         )
         self.net_g = model
         self.net_d = discriminator
