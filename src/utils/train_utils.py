@@ -197,6 +197,9 @@ class TrainEpoch(Epoch):
     
     def batch_update(self, current_iter):
        
+        # creating a list of optimizers to allow integration of lr_scheduler
+        self.optimizers = [self.optimizer_g, self.optimizer_d]
+        
         # initiliazing MSELoss from Epoch
         cri_pix_cls = self.MLoss
         self.cri_pix = cri_pix_cls(loss_weight=self.loss_weight, reduction='mean').to(self.device)
@@ -312,6 +315,9 @@ class ValidEpoch(Epoch):
 
     def batch_update(self, current_iter):
        
+        # creating a list of optimizers to allow integration of lr_scheduler
+        self.optimizers = [self.optimizer_g, self.optimizer_d]
+        
         # initiliazing MSELoss from Epoch
         cri_pix_cls = self.MLoss
         self.cri_pix = cri_pix_cls(loss_weight=self.loss_weight, reduction='mean').to(self.device)
