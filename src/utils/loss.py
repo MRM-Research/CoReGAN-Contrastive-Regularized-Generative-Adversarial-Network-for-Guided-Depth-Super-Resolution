@@ -194,11 +194,12 @@ def compute_gradient_penalty(D, real_samples, fake_samples, device):
     return gradient_penalty
 
 class custom_loss(base.Loss):
-    def __init__(self, batch_size, beta=0.5, loss_weight=0.5):
+    def __init__(self, batch_size, beta=0.5, loss_weight=0.5, gan_type='standard'):
         super().__init__()
 
+        self.gan_type = gan_type
         self.contrast = ContrastiveLoss(batch_size)
-        self.GANLoss = GANLoss
+        self.GANLoss = GANLoss(self.gan_type)
         self.mse = nn.MSELoss()
         
         self.loss_weight = loss_weight
@@ -223,10 +224,11 @@ class custom_loss_val(base.Loss):
     Custom loss function for validation which DOESNT use contrastive loss.
     This is because contrastive loss is not differentiable.
     """
-    def __init__(self, loss_weight=0.5):
+    def __init__(self, loss_weight=0.5, gan_type='standard'):
         super().__init__()
 
-        self.GANLoss = GANLoss
+        self.gan_type = gan_type
+        self.GANLoss = GANLoss(self.gan_type)
         self.mse = nn.MSELoss()
         
         self.loss_weight = loss_weight

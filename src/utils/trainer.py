@@ -22,7 +22,8 @@ def train(epochs,
           device='cuda', 
           lr=1e-4,
           beta=1, 
-          loss_weight=0.5
+          loss_weight=0.5,
+          gan_type='standard'
           ):
 
     activation = 'tanh' 
@@ -66,8 +67,8 @@ def train(epochs,
     valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=True)#, drop_last=True)
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)\
         
-    loss = custom_loss(batch_size, beta=beta, loss_weight=loss_weight)
-    loss_val = custom_loss_val(loss_weight=loss_weight)
+    loss = custom_loss(batch_size, beta=beta, loss_weight=loss_weight, gan_type=gan_type)
+    loss_val = custom_loss_val(loss_weight=loss_weight, gan_type=gan_type)
 
     # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer,250)
     train_epoch = TrainEpoch(
@@ -123,7 +124,8 @@ def train_model(configs):
     train(configs['epochs'], configs['batch_size'], configs['hr_dir'],
          configs['tar_dir'], configs['th_dir'], configs['hr_val_dir'],
          configs['tar_val_dir'], configs['hr_test_dir'],configs['tar_test_dir'], configs['encoder'],
-         configs['encoder_weights'], configs['device'], configs['lr'], configs['beta'], configs['loss_weight'])
+         configs['encoder_weights'], configs['device'], configs['lr'], configs['beta'], configs['loss_weight'],
+         configs['gan_type'])
     
 # 2. In metrics, change back to 0, 1 from -1, 1 , rest remains the same - dont clamp --> aryan
 # 5. change wand.config.update and init - init mse and mae as big value
