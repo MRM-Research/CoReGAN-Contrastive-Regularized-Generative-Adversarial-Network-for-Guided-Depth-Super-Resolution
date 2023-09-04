@@ -29,7 +29,7 @@ class Dataset():
         
         
     def standardize(self,image,mean,std):
-        image = image/255
+        image = image/255.0
         image_normalised = image - mean
         image_standardized = image_normalised / std
         
@@ -72,7 +72,7 @@ class Dataset():
         target_image = target_image.unsqueeze(0)
         depth_low_res_image = depth_low_res_image.unsqueeze(0)
         
-        target_image = tanh_fi(target_image)
+        target_image = tan_fi(target_image)
         
         #target_image = target_image.repeat(3,1,1)
         #depth_low_res_image = depth_low_res_image.repeat(3,1,1)
