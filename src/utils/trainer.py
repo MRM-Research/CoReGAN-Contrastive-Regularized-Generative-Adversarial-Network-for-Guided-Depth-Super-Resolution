@@ -3,9 +3,8 @@ import segmentation_models_pytorch as smp
 from .train_utils import TrainEpoch, ValidEpoch
 from .loss import custom_loss, custom_loss_val
 from .dataloader import Dataset
-from .transformations import get_training_augmentation, get_validation_augmentation, get_preprocessing,resize
+from .transformations import get_training_augmentation, get_preprocessing,resize
 from .model import Unet
-import torch
 from torch.utils.data import DataLoader
 from .model import Discriminator
 
