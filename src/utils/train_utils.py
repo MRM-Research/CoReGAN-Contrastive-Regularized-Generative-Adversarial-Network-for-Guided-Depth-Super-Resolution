@@ -113,8 +113,8 @@ class Epoch:
         self.verbose = verbose
         self.device = device
         
-        self.GLoss = GANLoss
-        self.MLoss = MSELoss
+        self.GLoss = GANLoss()
+        self.MLoss = MSELoss()
         self._to_device()
 
     def _to_device(self):
