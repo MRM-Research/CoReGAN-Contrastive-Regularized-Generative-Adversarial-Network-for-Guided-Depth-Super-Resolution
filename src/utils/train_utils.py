@@ -107,13 +107,14 @@ class AverageValueMeter(Meter):
 
 
 class Epoch:
-    def __init__(self, model, stage_name, device="cpu", verbose=True):
+    def __init__(self, gan_type, model, stage_name, device="cpu", verbose=True):
         self.net_g = model
         self.stage_name = stage_name
         self.verbose = verbose
         self.device = device
+        self.gan_type = gan_type
         
-        self.GLoss = GANLoss()
+        self.GLoss = GANLoss(gan_type=self.gan_type)
         self.MLoss = MSELoss()
         self._to_device()
 
@@ -204,7 +205,7 @@ class TrainEpoch(Epoch):
         self.cri_pix = cri_pix_cls(loss_weight=self.loss_weight, reduction='mean').to(self.device)
         
         # initializing GANLoss from Epoch
-        cri_gan_cls = self.GLoss
+        cri_gan_cls = self.GLoss(gan_type=self.gan_type)
         self.cri_gan = cri_gan_cls(gan_type='standard', real_label_val=1.0, fake_label_val=0.0, loss_weight=1).to(self.device)
         self.gp_weight = 100
 
