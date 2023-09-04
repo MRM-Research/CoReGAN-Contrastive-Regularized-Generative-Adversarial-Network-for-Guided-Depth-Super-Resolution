@@ -11,7 +11,7 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error
 
 from .loss import compute_gradient_penalty
 from .loss import GANLoss
-import lr_scheduler
+
 loss_dict = OrderedDict()
 
 def get_current_visuals(self):
@@ -317,7 +317,7 @@ class ValidEpoch(Epoch):
        
         # creating a list of optimizers to allow integration of lr_scheduler
         self.optimizers = [self.optimizer_g, self.optimizer_d]
-        
+
         # initiliazing MSELoss from Epoch
         cri_pix_cls = self.MLoss
         self.cri_pix = cri_pix_cls(loss_weight=self.loss_weight, reduction='mean').to(self.device)
