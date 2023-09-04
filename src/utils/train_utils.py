@@ -118,10 +118,9 @@ class Epoch:
         self.MLoss = MSELoss
 
     def _to_device(self):
-        self.model.to(self.device)
-        self.loss.to(self.device)
-        for metric in self.metrics:
-            metric.to(self.device)
+        self.net_g.to(self.device)
+        self.Gloss.to(self.device)
+        self.Gloss.to(self.device)
 
     def _format_logs(self, logs):
         str_logs = ["{} - {:.4}".format(k, v) for k, v in logs.items()]
