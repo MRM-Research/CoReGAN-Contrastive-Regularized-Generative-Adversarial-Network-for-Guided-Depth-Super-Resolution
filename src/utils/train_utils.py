@@ -112,10 +112,10 @@ class Epoch:
         self.stage_name = stage_name
         self.verbose = verbose
         self.device = device
-
-        self._to_device()
+        
         self.GLoss = GANLoss
         self.MLoss = MSELoss
+        self._to_device()
 
     def _to_device(self):
         self.net_g.to(self.device)
