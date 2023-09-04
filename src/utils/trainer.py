@@ -67,7 +67,7 @@ def train(epochs,
     #test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)\
         
     loss = custom_loss(batch_size, beta=beta, loss_weight=loss_weight, gan_type=gan_type)
-    loss_val = custom_loss_val(loss_weight=loss_weight, gan_type=gan_type)
+    # loss_val = custom_loss_val(loss_weight=loss_weight, gan_type=gan_type)
 
     # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer,250)
     train_epoch = TrainEpoch(
@@ -77,13 +77,13 @@ def train(epochs,
         verbose=True,
         contrastive=True
     )
-    valid_epoch = ValidEpoch(
-        model=model, 
-        loss=loss, 
-        device=device,
-        verbose=True,
-        contrastive=True
-    )
+    # valid_epoch = ValidEpoch(
+    #     model=model, 
+    #     loss=loss, 
+    #     device=device,
+    #     verbose=True,
+    #     contrastive=True
+    # )
 
     min_mse = 0
     min_mae = 0
