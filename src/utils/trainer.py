@@ -121,7 +121,7 @@ def train(epochs,
 
 def train_model(configs):
     train(configs['epochs'], configs['batch_size'], configs['hr_dir'],
-         configs['tar_dir'], configs['th_dir'], configs['hr_val_dir'],
+         configs['tar_dir'], configs['hr_val_dir'],
          configs['tar_val_dir'], configs['hr_test_dir'],configs['tar_test_dir'], configs['encoder'],
          configs['encoder_weights'], configs['device'], configs['lr'], configs['beta'], configs['loss_weight'],
          configs['gan_type'])
