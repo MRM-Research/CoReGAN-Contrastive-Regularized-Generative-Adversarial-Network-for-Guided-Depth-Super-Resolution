@@ -16,11 +16,11 @@ loss_dict = OrderedDict()
 
 def get_current_visuals(self):
     out_dict = OrderedDict()
-    out_dict['depth_low_res'] = self.Thermal_low_res.detach().to(self.device)
+    out_dict['depth_low_res'] = self.depth_low_res.detach().to(self.device)
     out_dict['result'] = self.output.detach().to(self.device)
     out_dict['RGB'] = self.RGB.detach().to(self.device)
     if hasattr(self, 'depth_high_res'):
-        out_dict['depth_high_res'] = self.Thermal_high_res.detach().to(self.device)
+        out_dict['depth_high_res'] = self.depth_high_res.detach().to(self.device)
     return out_dict
 
 P = PeakSignalNoiseRatio()
@@ -175,7 +175,7 @@ class Epoch:
         return logs
 
 class TrainEpoch(Epoch):
-    def __init__(self, model, discriminator, device="cpu", verbose=True, contrastive=True,gan_type = "standard"):
+    def __init__(self, model, discriminator, loss_weight, device="cpu", verbose=True, contrastive=True,gan_type = "standard"):
         super().__init__(
             model=model,
             gan_type = gan_type,
@@ -183,6 +183,7 @@ class TrainEpoch(Epoch):
             device=device,
             verbose=verbose,
         )
+        self.loss_weight = loss_weight
         self.net_g = model
         self.net_d = discriminator
         self.contrastive = contrastive
@@ -285,7 +286,7 @@ class TrainEpoch(Epoch):
         result_img = visuals['result']
         if 'depth_high_res' in visuals:
             DHR_img = visuals['depth_high_res']
-            del self.Thermal_high_res
+            del self.depth_high_res
       
         psnr, ssim, mse_metric, mae_metric = self.calculate_metrics(result_img, DHR_img)   
 
@@ -395,7 +396,7 @@ class ValidEpoch(Epoch):
         result_img = visuals['result']
         if 'depth_high_res' in visuals:
             DHR_img = visuals['depth_high_res']
-            del self.Thermal_high_res
+            del self.depth_high_res
       
         psnr, ssim, mse_metric, mae_metric = self.calculate_metrics(result_img, DHR_img)   
 

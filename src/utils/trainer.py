@@ -72,7 +72,8 @@ def train(epochs,
     # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer,250)
     train_epoch = TrainEpoch(
         model=model,
-        discriminator=disc,  
+        discriminator=disc,
+        loss_weight=loss_weight,  
         device=device,
         verbose=True,
         contrastive=True
