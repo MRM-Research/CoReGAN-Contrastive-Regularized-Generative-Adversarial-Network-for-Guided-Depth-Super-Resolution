@@ -35,8 +35,6 @@ class Dataset():
     def __getitem__(self, i):
         
         # read data
-        print(self.rgb_list[i])
-        print(self.target_list[i])
         rgb_image = np.load(self.rgb_list[i])
         target_image = np.load(self.target_list[i])
         
