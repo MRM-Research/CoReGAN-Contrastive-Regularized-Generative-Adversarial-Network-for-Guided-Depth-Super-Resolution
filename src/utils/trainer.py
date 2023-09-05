@@ -53,6 +53,10 @@ def train(epochs,
     print(a.shape)
     print(b.shape)
     print(c.shape)
+    print()
+    print(type(a))
+    print(type(b))
+    print(type(c))
     # valid_dataset = Dataset(
     #     hr_val_dir,
     #     tar_val_dir,

@@ -72,6 +72,7 @@ class Dataset():
         #target_image = target_image.repeat(3,1,1)
         #depth_low_res_image = depth_low_res_image.repeat(3,1,1)
         rgb_image = rgb_image.permute(2,0,1)
+
         
         return rgb_image, depth_low_res_image, target_image
     
