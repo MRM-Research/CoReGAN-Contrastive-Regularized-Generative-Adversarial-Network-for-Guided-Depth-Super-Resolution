@@ -26,7 +26,7 @@ class Dataset():
         
         
     def standardize(self,image,mean,std):
-        image = image/255.0
+        image = image/255
         image_normalised = image - mean
         image_standardized = image_normalised / std
         
@@ -35,6 +35,8 @@ class Dataset():
     def __getitem__(self, i):
         
         # read data
+        print(self.rgb_list[i])
+        print(self.target_list[i])
         rgb_image = np.load(self.rgb_list[i])
         target_image = np.load(self.target_list[i])
         
@@ -67,11 +69,9 @@ class Dataset():
         target_image = target_image.unsqueeze(0)
         depth_low_res_image = depth_low_res_image.unsqueeze(0)
         
-        target_image = tan_fi(target_image)
-        
         #target_image = target_image.repeat(3,1,1)
         #depth_low_res_image = depth_low_res_image.repeat(3,1,1)
-        rgb_image = rgb_image.permute(2, 0, 1)
+        rgb_image = rgb_image.permute(2,0,1)
         
         return rgb_image, depth_low_res_image, target_image
     
