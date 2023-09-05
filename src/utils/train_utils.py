@@ -143,14 +143,14 @@ class Epoch:
         logs = {}
         loss_meter = AverageValueMeter()
         metrics_meters = {"MSE": AverageValueMeter(), "MAE": AverageValueMeter(), "PSNR": AverageValueMeter(), "SSIM": AverageValueMeter()}
-
+        iter = 0
         with tqdm(
             dataloader,
             desc=self.stage_name,
             file=sys.stdout,
             disable=not (self.verbose),
         ) as iterator:
-            for x, z, y, iter in iterator:    
+            for x,z,y in iterator:    
                 x, z, y = x.to(self.device), z.to(self.device), y.to(self.device)
                 loss, l_g_total, ssim, psnr, mae, mse = self.batch_update(iter,x,z,y) ### log both? how?
 
@@ -172,6 +172,7 @@ class Epoch:
                 if self.verbose:
                     s = self._format_logs(logs)
                     iterator.set_postfix_str(s)
+                iter = iter + 1
 
         return logs
 
