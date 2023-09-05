@@ -5,12 +5,16 @@ from segmentation_models_pytorch.utils import base
 import autograd
 from torch.autograd import Variable
 import numpy as np
+from torch.nn import functional as F
+
+from.loss_util import weighted_loss
 
 def device_as(t1, t2):
     """
     Moves t1 to the device of t2
     """
     return t1.to(t2.device)
+    
 class ContrastiveLoss(nn.Module):
     """
     Vanilla Contrastive loss, also called InfoNceLoss as in SimCLR paper
@@ -49,7 +53,37 @@ class ContrastiveLoss(nn.Module):
         all_losses = -torch.log(nominator / torch.sum(denominator, dim=1))
         loss = torch.sum(all_losses) / (2 * self.batch_size)
         return loss
-    
+
+@weighted_loss
+def mse_loss(pred, target):
+    return F.mse_loss(pred, target, reduction='none')
+
+class MSELoss(nn.Module):
+    """MSE (L2) loss.
+
+    Args:
+        loss_weight (float): Loss weight for MSE loss. Default: 1.0.
+        reduction (str): Specifies the reduction to apply to the output.
+            Supported choices are 'none' | 'mean' | 'sum'. Default: 'mean'.
+    """
+
+    def __init__(self, loss_weight=1.0, reduction='mean'):
+        super(MSELoss, self).__init__()
+
+        self.loss_weight = loss_weight
+        self.reduction = reduction
+
+    def forward(self, pred, target, weight=None, **kwargs):
+        """
+        Args:
+            pred (Tensor): of shape (N, C, H, W). Predicted tensor.
+            target (Tensor): of shape (N, C, H, W). Ground truth tensor.
+            weight (Tensor, optional): of shape (N, C, H, W). Element-wise
+                weights. Default: None.
+        """
+        return self.loss_weight * mse_loss(
+            pred, target, weight, reduction=self.reduction)
+
 class GANLoss(nn.Module):
     """Define GAN loss.
 
