@@ -5,7 +5,7 @@ import numpy as np
 from .misc import un_tan_fi
 from collections import OrderedDict
 from torchmetrics import PeakSignalNoiseRatio, StructuralSimilarityIndexMeasure
-from torch.optim.lr_scheduler import _LRScheduler as lr_scheduler
+from utils import lr_scheduler  as lr_scheduler
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 
 from .loss import compute_gradient_penalty
@@ -192,6 +192,7 @@ class TrainEpoch(Epoch):
         self.net_g = model
         self.net_d = discriminator
         self.contrastive = contrastive
+        self.schedulers = []
 
         self.optimizer_g = torch.optim.Adam(self.net_g.parameters(),
                                     lr=0.0001, weight_decay=0, betas=[0.9, 0.99])
