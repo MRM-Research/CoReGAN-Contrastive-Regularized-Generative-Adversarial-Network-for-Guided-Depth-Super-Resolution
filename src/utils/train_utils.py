@@ -130,7 +130,7 @@ class Epoch:
         s = ", ".join(str_logs)
         return s
 
-    def batch_update(self, x,z, y):
+    def batch_update(self,iter,x,z,y):
         raise NotImplementedError
 
     def on_epoch_start(self):
@@ -152,7 +152,7 @@ class Epoch:
         ) as iterator:
             for x, z, y, iter in iterator:    
                 x, z, y = x.to(self.device), z.to(self.device), y.to(self.device)
-                loss, l_g_total, ssim, psnr, mae, mse = self.batch_update(iter) ### log both? how?
+                loss, l_g_total, ssim, psnr, mae, mse = self.batch_update(iter,x,z,y) ### log both? how?
 
                 # update loss logs
                 loss_value = loss.cpu().detach().numpy()
@@ -200,8 +200,15 @@ class TrainEpoch(Epoch):
     def on_epoch_start(self):
         self.net_g.train()
         self.net_d.train()
+        
+    def feed_data(self,x,z,y):
+        self.rgb = x
+        self.depth_high_res = y
+        self.depth_low_res = z
     
-    def batch_update(self, current_iter, x, z, y):
+    def batch_update(self, current_iter,x,z,y):
+        
+        self.feed_data(x,z,y)
        
         # creating a list of optimizers to allow integration of lr_scheduler
         self.optimizers = [self.optimizer_g, self.optimizer_d]
@@ -231,7 +238,7 @@ class TrainEpoch(Epoch):
         self.optimizer_g.zero_grad()
 
         # generating output
-        self.output = self.net_g(self.RGB, self.depth_low_res)
+        self.output = self.net_g(self.rgb, self.depth_low_res)
 
         l_g_total = 0
         loss_dict = OrderedDict()           
@@ -262,7 +269,7 @@ class TrainEpoch(Epoch):
         self.optimizer_d.zero_grad()
 
         # generating output
-        self.output = self.net_g(self.RGB, self.depth_low_res)
+        self.output = self.net_g(self.rgb, self.depth_low_res)
         
         # real image generation
         real_d_pred = self.net_d(self.depth_high_res)
@@ -285,16 +292,17 @@ class TrainEpoch(Epoch):
         self.optimizer_d.step()       
         
         visuals = self.get_current_visuals()
-        input_img = visuals['RGB'] 
+        guiding_img = visuals['RGB'] 
         result_img = visuals['result']
+        input_img = visuals['depth_low_res']
         if 'depth_high_res' in visuals:
             DHR_img = visuals['depth_high_res']
-            del self.depth_high_res
+            del self.y
       
         psnr, ssim, mse_metric, mae_metric = self.calculate_metrics(result_img, DHR_img)
 
-        prediction, ft1, ft2 = self.model.forward(x,z)
-        loss = custom_loss(prediction, y, ft1, ft2)   
+        prediction, ft1, ft2 = self.model.forward(guiding_img,input_img)
+        loss = custom_loss(prediction,DHR_img, ft1, ft2)   
 
         return loss, l_g_total, psnr, ssim, mse_metric, mae_metric
 
