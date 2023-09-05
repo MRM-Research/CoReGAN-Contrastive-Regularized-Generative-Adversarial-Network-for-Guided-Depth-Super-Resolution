@@ -215,13 +215,6 @@ class TrainEpoch(Epoch):
         # creating a list of optimizers to allow integration of lr_scheduler
         self.optimizers = [self.optimizer_g, self.optimizer_d]
         
-        # initiliazing MSELoss from Epoch
-        self.cri_pix = self.MLoss(loss_weight=self.loss_weight_gan, reduction='mean').to(self.device)
-        
-        # initializing GANLoss from Epoch
-        self.cri_gan = self.GLoss(gan_type=self.gan_type, real_label_val=1.0, fake_label_val=0.0, loss_weight=1).to(self.device)
-        self.gp_weight = 100
-
         self.net_d_iters = 1
         self.net_d_init_iters = 0
 
@@ -239,6 +232,12 @@ class TrainEpoch(Epoch):
 
         # generating output
         self.output = self.net_g(self.rgb, self.depth_low_res)
+        
+        # initiliazing MSELoss from Epoch
+        self.cri_pix = self.MLoss(self.output, self.depth_high_res).to(self.device)
+        
+        # initializing GANLoss from Epoch
+        self.cri_gan = self.GLoss(gan_type=self.gan_type, real_label_val=1.0, fake_label_val=0.0, loss_weight=1).to(self.device)
 
         l_g_total = 0
         loss_dict = OrderedDict()           
@@ -284,6 +283,7 @@ class TrainEpoch(Epoch):
         loss_dict['out_d_fake'] = torch.mean(fake_d_pred.detach())
 
         # gradient penalty for discriminator
+        self.gp_weight = 100
         gradient_penalty = compute_gradient_penalty(self.net_d, self.depth_high_res, self.output, self.device)
         l_d = l_d_real + l_d_fake + (self.gp_weight * gradient_penalty)
 
