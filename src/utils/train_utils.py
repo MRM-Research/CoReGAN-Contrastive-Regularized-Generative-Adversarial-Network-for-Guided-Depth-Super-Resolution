@@ -151,8 +151,8 @@ class Epoch:
             disable=not (self.verbose),
         ) as loader:
             for iteration, batch_data in enumerate(loader):
-                x, z, y = x.to(self.device), z.to(self.device), y.to(self.device)
                 x, z , y = batch_data
+                x, z, y = x.to(self.device), z.to(self.device), y.to(self.device)
                 loss, l_g_total, ssim, psnr, mae, mse = self.batch_update(iteration) ### log both? how?
 
                 # update loss logs
