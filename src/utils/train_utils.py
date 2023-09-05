@@ -11,6 +11,7 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error
 
 from .loss import compute_gradient_penalty
 from .loss import GANLoss
+from .loss import custom_loss
 
 loss_dict = OrderedDict()
 
@@ -107,8 +108,9 @@ class AverageValueMeter(Meter):
 
 
 class Epoch:
-    def __init__(self, gan_type, model, stage_name, device="cpu", verbose=True):
+    def __init__(self, gan_type, model, loss, stage_name, device="cpu", verbose=True):
         self.net_g = model
+        self.loss = loss
         self.stage_name = stage_name
         self.verbose = verbose
         self.device = device
@@ -148,10 +150,10 @@ class Epoch:
             file=sys.stdout,
             disable=not (self.verbose),
         ) as loader:
-            for iteration in enumerate(loader):
-                # x, z, y = x.to(self.device), z.to(self.device), y.to(self.device)
-                # x, z , y = batch_data
-                loss, ssim, psnr, mae, mse = self.batch_update(iteration)
+            for iteration, batch_data in enumerate(loader):
+                x, z, y = x.to(self.device), z.to(self.device), y.to(self.device)
+                x, z , y = batch_data
+                loss, l_g_total, ssim, psnr, mae, mse = self.batch_update(iteration) ### log both? how?
 
                 # update loss logs
                 loss_value = loss.cpu().detach().numpy()
@@ -175,15 +177,17 @@ class Epoch:
         return logs
 
 class TrainEpoch(Epoch):
-    def __init__(self, model, discriminator, loss_weight, device="cpu", verbose=True, contrastive=True,gan_type = "standard"):
+    def __init__(self, model, loss, discriminator, loss_weight_loss, loss_weight_gan, device="cpu", verbose=True, contrastive=True,gan_type = "standard"):
         super().__init__(
             model=model,
-            gan_type = gan_type,
+            loss=loss,
+            gan_type=gan_type,
             stage_name="train",
             device=device,
             verbose=verbose,
         )
-        self.loss_weight = loss_weight
+        self.loss_weight_loss = loss_weight_loss
+        self.loss_weight_gan = loss_weight_gan
         self.net_g = model
         self.net_d = discriminator
         self.contrastive = contrastive
@@ -198,14 +202,14 @@ class TrainEpoch(Epoch):
         self.net_g.train()
         self.net_d.train()
     
-    def batch_update(self, current_iter):
+    def batch_update(self, current_iter, x, z, y):
        
         # creating a list of optimizers to allow integration of lr_scheduler
         self.optimizers = [self.optimizer_g, self.optimizer_d]
         
         # initiliazing MSELoss from Epoch
         cri_pix_cls = self.MLoss
-        self.cri_pix = cri_pix_cls(loss_weight=self.loss_weight, reduction='mean').to(self.device)
+        self.cri_pix = cri_pix_cls(loss_weight=self.loss_weight_gan, reduction='mean').to(self.device)
         
         # initializing GANLoss from Epoch
         cri_gan_cls = self.GLoss(gan_type=self.gan_type)
@@ -288,9 +292,12 @@ class TrainEpoch(Epoch):
             DHR_img = visuals['depth_high_res']
             del self.depth_high_res
       
-        psnr, ssim, mse_metric, mae_metric = self.calculate_metrics(result_img, DHR_img)   
+        psnr, ssim, mse_metric, mae_metric = self.calculate_metrics(result_img, DHR_img)
 
-        return l_g_total, psnr, ssim, mse_metric, mae_metric
+        prediction, ft1, ft2 = self.model.forward(x,z)
+        loss = custom_loss(prediction, y, ft1, ft2)   
+
+        return loss, l_g_total, psnr, ssim, mse_metric, mae_metric
 
 class ValidEpoch(Epoch):
     def __init__(self, model, optimizer, device="cpu", verbose=True, contrastive=False):

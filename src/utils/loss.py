@@ -191,7 +191,7 @@ def compute_gradient_penalty(D, real_samples, fake_samples, device):
     return gradient_penalty
 
 class custom_loss(base.Loss):
-    def __init__(self, batch_size, beta=0.5, loss_weight=0.5, gan_type='standard'):
+    def __init__(self, batch_size, beta=0.5, loss_weight_loss=0.5, gan_type='standard'):
         super().__init__()
 
         self.gan_type = gan_type
@@ -199,7 +199,7 @@ class custom_loss(base.Loss):
         self.GANLoss = GANLoss(self.gan_type)
         self.mse = nn.MSELoss()
         
-        self.loss_weight = loss_weight
+        self.loss_weight_loss = loss_weight_loss
         self.beta = beta
 
     def forward(self, y_pr, y_gt, ft1=None, ft2=None):
@@ -214,7 +214,7 @@ class custom_loss(base.Loss):
         g = self.GANLoss(y_pr, y_gt, is_disc=False)
         m = self.mse(y_pr, y_gt)
 
-        return (self.beta)*c + (self.loss_weight)*m + (1-self.loss_weight)*g
+        return (self.beta)*c + (self.loss_weight_loss)*m + (1-self.loss_weight_loss)*g
     
 class custom_loss_val(base.Loss):
     """
