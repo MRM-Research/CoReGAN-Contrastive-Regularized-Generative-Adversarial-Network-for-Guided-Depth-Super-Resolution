@@ -117,7 +117,7 @@ class Epoch:
         self.gan_type = gan_type
         
         self.GLoss = GANLoss(gan_type=self.gan_type)
-        self.MLoss = MSELoss()
+        self.MLoss = MSELoss
         self._to_device()
 
     def _to_device(self):
