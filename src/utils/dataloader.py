@@ -71,6 +71,7 @@ class Dataset():
         
         #target_image = target_image.repeat(3,1,1)
         #depth_low_res_image = depth_low_res_image.repeat(3,1,1)
+        rgb_image = rgb_image.permute(2, 0, 1)
         print(rgb_image.shape)
         print(depth_low_res_image.shape)
         print(target_image.shape)
