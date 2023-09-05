@@ -28,7 +28,7 @@ def main(args):
                        'max_psnr':0, 
                        'min_mse': 1e6, 
                        'min_mae': 1e6, 
-                       'loss_weight': args.loss_weight, 
+                       'loss_weight_loss': args.loss_weight_gan, 
                        'encoder':args.encoder,
                        'BS': args.batch_size,
                        'gan_type': args.gan_type
