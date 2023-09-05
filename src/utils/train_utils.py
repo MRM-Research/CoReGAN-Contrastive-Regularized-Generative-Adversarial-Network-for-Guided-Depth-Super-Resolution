@@ -122,7 +122,6 @@ class Epoch:
     def _to_device(self):
         self.net_g.to(self.device)
         self.GLoss.to(self.device)
-        print(self.MLoss)
         self.MLoss.to(self.device)
 
 
@@ -232,6 +231,8 @@ class TrainEpoch(Epoch):
         self.optimizer_g.zero_grad()
 
         # generating output
+        print(self.rgb.shape)
+        print(self.depth_low_res.shape)
         self.output = self.net_g(self.rgb, self.depth_low_res)
         
         # initiliazing MSELoss from Epoch

@@ -49,6 +49,10 @@ def train(epochs,
         preprocessing=get_preprocessing(preprocessing_fn),
         resize = resize()
     )
+    a,b,c = train_dataset.__getitem__(0)
+    print(a.shape)
+    print(b.shape)
+    print(c.shape)
     # valid_dataset = Dataset(
     #     hr_val_dir,
     #     tar_val_dir,
