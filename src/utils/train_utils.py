@@ -214,7 +214,7 @@ class TrainEpoch(Epoch):
         self.optimizers = [self.optimizer_g, self.optimizer_d]
         
         # initiliazing MSELoss from Epoch
-        self.cri_pix = self.Mloss(loss_weight=self.loss_weight_gan, reduction='mean').to(self.device)
+        self.cri_pix = self.MLoss(loss_weight=self.loss_weight_gan, reduction='mean').to(self.device)
         
         # initializing GANLoss from Epoch
         self.cri_gan = self.GLoss(gan_type=self.gan_type, real_label_val=1.0, fake_label_val=0.0, loss_weight=1).to(self.device)
