@@ -149,11 +149,10 @@ class Epoch:
             desc=self.stage_name,
             file=sys.stdout,
             disable=not (self.verbose),
-        ) as loader:
-            for iteration, batch_data in enumerate(loader):
-                x, z , y = batch_data
+        ) as iterator:
+            for x, z, y, iter in iterator:    
                 x, z, y = x.to(self.device), z.to(self.device), y.to(self.device)
-                loss, l_g_total, ssim, psnr, mae, mse = self.batch_update(iteration) ### log both? how?
+                loss, l_g_total, ssim, psnr, mae, mse = self.batch_update(iter) ### log both? how?
 
                 # update loss logs
                 loss_value = loss.cpu().detach().numpy()
@@ -172,7 +171,7 @@ class Epoch:
 
                 if self.verbose:
                     s = self._format_logs(logs)
-                    loader.set_postfix_str(s)
+                    iterator.set_postfix_str(s)
 
         return logs
 
