@@ -229,11 +229,11 @@ class TrainEpoch(Epoch):
         self.optimizer_g.zero_grad()
 
         # generating output
+        self.output = self.net_g(self.rgb, self.depth_low_res)
         print(self.rgb.shape)
         print(self.depth_low_res.shape)
         print(type(self.output))
         print(type(self.depth_high_res))
-        self.output = self.net_g(self.rgb, self.depth_low_res)
         
         # initiliazing MSELoss from Epoch
         self.cri_pix = self.MLoss(self.output, self.depth_high_res).to(self.device)
