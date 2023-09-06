@@ -152,6 +152,7 @@ class Epoch:
         ) as iterator:
             for x,z,y in iterator:    
                 x, z, y = x.to(self.device), z.to(self.device), y.to(self.device)
+                
                 loss, l_g_total, ssim, psnr, mae, mse = self.batch_update(iter,x,z,y) ### log both? how?
 
                 # update loss logs
@@ -234,11 +235,11 @@ class TrainEpoch(Epoch):
         print(type(self.depth_high_res))
         
         # initiliazing MSELoss from Epoch
-        self.cri_pix = self.MLoss(self.output, self.depth_high_res).to(self.device)
-        print("cri_pix - ", self.cri_pix)
+        #self.cri_pix = self.MLoss(self.output, self.depth_high_res).to(self.device)
+        #print("cri_pix - ", self.cri_pix)
         
         # initializing GANLoss from Epoch
-        self.cri_gan = self.GLoss(fake_g_pred, True, is_disc=False).to(self.device)
+        #self.cri_gan = self.GLoss(fake_g_pred, True, is_disc=False).to(self.device)
 
         l_g_total = 0
         loss_dict = OrderedDict()           
@@ -246,15 +247,14 @@ class TrainEpoch(Epoch):
         if (current_iter % self.net_d_iters == 0 and current_iter > self.net_d_init_iters):
             
             # pixel loss
-            if self.cri_pix:
-                l_g_pix = self.cri_pix(self.output, self.depth_high_res)
-                print("l_g_pix - ", l_g_pix)
-                l_g_total += l_g_pix
-                loss_dict['l_g_pix'] = l_g_pix
+            l_g_pix = self.MLoss(self.output, self.depth_high_res).to(self.device)
+            print("l_g_pix - ", l_g_pix)
+            l_g_total += l_g_pix
+            loss_dict['l_g_pix'] = l_g_pix
 
             # gan loss
             fake_g_pred = self.net_d(self.output)
-            l_g_gan = self.cri_gan(fake_g_pred, True, is_disc=False)
+            l_g_gan = self.GLoss(fake_g_pred, True, is_disc=False).to(self.device)
             l_g_total += l_g_gan
             loss_dict['l_g_gan'] = l_g_gan
 
