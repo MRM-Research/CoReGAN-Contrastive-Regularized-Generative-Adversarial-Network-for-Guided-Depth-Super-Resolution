@@ -271,7 +271,7 @@ class TrainEpoch(Epoch):
         self.optimizer_d.zero_grad()
 
         # generating output
-        self.output = self.net_g(self.rgb, self.depth_low_res)
+        self.output,f1,f2 = self.net_g(self.rgb, self.depth_low_res)
         
         # real image generation
         real_d_pred = self.net_d(self.depth_high_res)
@@ -280,6 +280,7 @@ class TrainEpoch(Epoch):
         loss_dict['out_d_real'] = torch.mean(real_d_pred.detach())
 
         # fake image generation
+        
         fake_d_pred = self.net_d(self.output)
         l_d_fake = self.GLoss(fake_g_pred, False, is_disc=True).to(self.device)
         loss_dict['l_d_fake'] = l_d_fake
