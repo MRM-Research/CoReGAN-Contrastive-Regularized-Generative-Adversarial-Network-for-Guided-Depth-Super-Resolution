@@ -97,7 +97,7 @@ class GANLoss(nn.Module):
     """
 
     def __init__(self,
-                 gan_type,
+                 gan_type='standard',
                  real_label_val=1.0,
                  fake_label_val=0.0,
                  loss_weight=1.0,
