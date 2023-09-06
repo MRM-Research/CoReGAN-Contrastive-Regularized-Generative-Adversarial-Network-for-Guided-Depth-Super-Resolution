@@ -308,7 +308,7 @@ class TrainEpoch(Epoch):
         input_img = visuals['depth_low_res']
         if 'depth_high_res' in visuals:
             DHR_img = visuals['depth_high_res']
-            del self.y
+            del self.depth_high_res
       
         psnr, ssim, mse_metric, mae_metric = calculate_metrics(result_img, DHR_img)
 
