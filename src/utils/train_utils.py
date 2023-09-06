@@ -5,7 +5,7 @@ import numpy as np
 from .misc import un_tan_fi
 from collections import OrderedDict
 from torchmetrics import PeakSignalNoiseRatio, StructuralSimilarityIndexMeasure
-from utils import lr_scheduler  as lr_scheduler
+from .lr_scheduler import _LRScheduler  as lr_scheduler
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 
 from .loss import compute_gradient_penalty
