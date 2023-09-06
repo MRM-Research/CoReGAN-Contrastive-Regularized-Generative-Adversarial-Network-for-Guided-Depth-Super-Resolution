@@ -38,7 +38,7 @@ def train(epochs,
         contrastive=True,
     )
 
-    disc = Discriminator()
+    disc = Discriminator().to(device)
 
     preprocessing_fn = smp.encoders.get_preprocessing_fn(encoder, encoder_weights)
 
