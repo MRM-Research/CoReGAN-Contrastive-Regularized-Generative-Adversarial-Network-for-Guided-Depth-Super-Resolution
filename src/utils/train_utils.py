@@ -5,7 +5,7 @@ import numpy as np
 from .misc import un_tan_fi
 from collections import OrderedDict
 from torchmetrics import PeakSignalNoiseRatio, StructuralSimilarityIndexMeasure
-from lr_scheduler import MultiStepRestartLR
+from .lr_scheduler import MultiStepRestartLR
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 
 from .loss import compute_gradient_penalty
