@@ -144,6 +144,8 @@ class Epoch:
         loss_meter = AverageValueMeter()
         metrics_meters = {"MSE": AverageValueMeter(), "MAE": AverageValueMeter(), "PSNR": AverageValueMeter(), "SSIM": AverageValueMeter()}
         iter = 0
+        l_g_total = 0
+        loss_dict = OrderedDict()
         with tqdm(
             dataloader,
             desc=self.stage_name,
@@ -152,8 +154,7 @@ class Epoch:
         ) as iterator:
             for x,z,y in iterator:    
                 x, z, y = x.to(self.device), z.to(self.device), y.to(self.device)
-                
-                loss, l_g_total, ssim, psnr, mae, mse = self.batch_update(iter,x,z,y) ### log both? how?
+                loss, ssim, psnr, mae, mse = self.batch_update(iter,x,z,y) ### log both? how?
 
                 # update loss logs
                 loss_value = loss.cpu().detach().numpy()
@@ -274,13 +275,13 @@ class TrainEpoch(Epoch):
         
         # real image generation
         real_d_pred = self.net_d(self.depth_high_res)
-        l_d_real = self.cri_gan(real_d_pred, True, is_disc=True)
+        l_d_real = self.GLoss(fake_g_pred, True, is_disc=False).to(self.device)
         loss_dict['l_d_real'] = l_d_real
         loss_dict['out_d_real'] = torch.mean(real_d_pred.detach())
 
         # fake image generation
         fake_d_pred = self.net_d(self.output)
-        l_d_fake = self.cri_gan(fake_d_pred, False, is_disc=True)
+        l_d_fake = self.GLoss(fake_g_pred, True, is_disc=False).to(self.device)
         loss_dict['l_d_fake'] = l_d_fake
         loss_dict['out_d_fake'] = torch.mean(fake_d_pred.detach())
 
@@ -305,7 +306,7 @@ class TrainEpoch(Epoch):
 
         loss = custom_loss(self.output,DHR_img, f1, f2)   
 
-        return loss, l_g_total, psnr, ssim, mse_metric, mae_metric
+        return loss, psnr, ssim, mse_metric, mae_metric
 
 class ValidEpoch(Epoch):
     def __init__(self, model, optimizer, device="cpu", verbose=True, contrastive=False):
