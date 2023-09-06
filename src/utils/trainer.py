@@ -46,7 +46,7 @@ def train(epochs,
         hr_dir,
         tar_dir,
         augmentation=get_training_augmentation(), 
-        preprocessing=get_preprocessing(preprocessing_fn),
+        preprocessing= True,
         resize = resize()
     )
     a,b,c = train_dataset.__getitem__(0)

@@ -1,7 +1,8 @@
 from .misc import tan_fi
 import numpy as np
-import torch
 import os
+import torch
+import torch.nn.functional as F
 
 
 class Dataset():  
@@ -26,7 +27,7 @@ class Dataset():
         
         
     def standardize(self,image,mean,std):
-        image = image/255
+        image = image/255.0
         image_normalised = image - mean
         image_standardized = image_normalised / std
         
@@ -35,8 +36,6 @@ class Dataset():
     def __getitem__(self, i):
         
         # read data
-        print(self.rgb_list[i])
-        print(self.target_list[i])
         rgb_image = np.load(self.rgb_list[i])
         target_image = np.load(self.target_list[i])
         
@@ -54,27 +53,25 @@ class Dataset():
         target_image = np.array(target_image)
         
         if self.preprocessing:
-            
+            rgb_image = np.transpose(rgb_image,(2,0,1))
             rgb_image[0] = self.standardize(rgb_image[0],0.48057137,0.28918139)
             rgb_image[1] = self.standardize(rgb_image[1],0.4109165,0.29590342)
             rgb_image[2] = self.standardize(rgb_image[2],0.39225202,0.30930299)
             target_image = target_image/255.0
-            depth_low_res_image[0] = self.standardize(depth_low_res_image[0],0.42791329,0.5207557)
-            depth_low_res_image[1] = self.standardize(depth_low_res_image[1],0.42791329,0.5207557)
-            depth_low_res_image[2] = self.standardize(depth_low_res_image[2],0.42791329,0.5207557)
+            depth_low_res_image = torch.tensor(depth_low_res_image, dtype=torch.float32)
+            depth_low_res_image = depth_low_res_image.unsqueeze(0).unsqueeze(0)
+            
+            depth_low_res_upscaled_image = F.interpolate(depth_low_res_image, size=(480, 640), mode='bicubic', align_corners=False)
+            depth_low_res_upscaled_image = depth_low_res_upscaled_image.squeeze(0)
+            depth_low_res_upscaled_image = self.standardize(depth_low_res_upscaled_image,0.010965940520344745,0.0054354988929296135)
+            depth_low_res_upscaled_image = depth_low_res_upscaled_image.numpy()
 
-        target_image = torch.from_numpy(target_image)
-        depth_low_res_image = torch.from_numpy(depth_low_res_image)
-        rgb_image = torch.from_numpy(rgb_image)
-        target_image = target_image.unsqueeze(0)
-        depth_low_res_image = depth_low_res_image.unsqueeze(0)
+        target_image = target_image[np.newaxis, :]
         
         #target_image = target_image.repeat(3,1,1)
         #depth_low_res_image = depth_low_res_image.repeat(3,1,1)
-        rgb_image = rgb_image.permute(2,0,1)
-
         
-        return rgb_image, depth_low_res_image, target_image
+        return rgb_image,depth_low_res_upscaled_image, target_image
     
     def load_img(self,directory):
         img_list = []
