@@ -205,6 +205,15 @@ class TrainEpoch(Epoch):
         self.net_g.train()
         self.net_d.train()
         
+    def get_current_visuals(self):
+        out_dict = OrderedDict()
+        out_dict['depth_low_res'] = self.depth_low_res.detach().to(self.device)
+        out_dict['result'] = self.output.detach().to(self.device)
+        out_dict['RGB'] = self.RGB.detach().to(self.device)
+        if hasattr(self, 'depth_high_res'):
+            out_dict['depth_high_res'] = self.depth_high_res.detach().to(self.device)
+        return out_dict
+        
     def feed_data(self,x,z,y):
         self.rgb = x
         self.depth_high_res = y
