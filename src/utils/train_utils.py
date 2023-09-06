@@ -115,7 +115,7 @@ class Epoch:
         self.device = device
         self.gan_type = gan_type
         
-        self.GLoss = GANLoss(gan_type=self.gan_type)
+        self.GLoss = GANLoss(gan_type=self.gan_type, real_label_val=1.0, fake_label_val=0.0, loss_weight=1)
         self.MLoss = MSELoss(loss_weight=1, reduction='mean')
         self._to_device()
 
@@ -235,9 +235,10 @@ class TrainEpoch(Epoch):
         
         # initiliazing MSELoss from Epoch
         self.cri_pix = self.MLoss(self.output, self.depth_high_res).to(self.device)
+        print("cri_pix - ", self.cri_pix)
         
         # initializing GANLoss from Epoch
-        self.cri_gan = self.GLoss(gan_type=self.gan_type, real_label_val=1.0, fake_label_val=0.0, loss_weight=1).to(self.device)
+        self.cri_gan = self.GLoss(fake_g_pred, True, is_disc=False).to(self.device)
 
         l_g_total = 0
         loss_dict = OrderedDict()           
@@ -247,6 +248,7 @@ class TrainEpoch(Epoch):
             # pixel loss
             if self.cri_pix:
                 l_g_pix = self.cri_pix(self.output, self.depth_high_res)
+                print("l_g_pix - ", l_g_pix)
                 l_g_total += l_g_pix
                 loss_dict['l_g_pix'] = l_g_pix
 
