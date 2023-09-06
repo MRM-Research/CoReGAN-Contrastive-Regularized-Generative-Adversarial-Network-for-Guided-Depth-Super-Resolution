@@ -63,6 +63,9 @@ class Dataset():
 
         target_image = target_image[np.newaxis, :]
         depth_low_res_image = depth_low_res_image[np.newaxis,:]
+        depth_low_res_image = torch.from_numpy(depth_low_res_image)
+        rgb_image = torch.from_numpy(rgb_image)
+        target_image = torch.from_numpy(target_image)
         
         #target_image = target_image.repeat(3,1,1)
         #depth_low_res_image = depth_low_res_image.repeat(3,1,1)
