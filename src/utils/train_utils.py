@@ -144,8 +144,6 @@ class Epoch:
         loss_meter = AverageValueMeter()
         metrics_meters = {"MSE": AverageValueMeter(), "MAE": AverageValueMeter(), "PSNR": AverageValueMeter(), "SSIM": AverageValueMeter()}
         iter = 0
-        l_g_total = 0
-        loss_dict = OrderedDict()
         with tqdm(
             dataloader,
             desc=self.stage_name,
