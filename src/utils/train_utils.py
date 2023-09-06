@@ -231,6 +231,8 @@ class TrainEpoch(Epoch):
         # generating output
         print(self.rgb.shape)
         print(self.depth_low_res.shape)
+        print(type(self.output))
+        print(type(self.depth_high_res))
         self.output = self.net_g(self.rgb, self.depth_low_res)
         
         # initiliazing MSELoss from Epoch
