@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from segmentation_models_pytorch.utils import base
-import autograd
+import torch.autograd as autograd
 from torch.autograd import Variable
 import numpy as np
 from torch.nn import functional as F
