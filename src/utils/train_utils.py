@@ -229,9 +229,7 @@ class TrainEpoch(Epoch):
         self.optimizer_g.zero_grad()
 
         # generating output
-        self.output = self.net_g(self.rgb, self.depth_low_res)
-        print(self.rgb.shape)
-        print(self.depth_low_res.shape)
+        self.output,f1,f2 = self.net_g(self.rgb, self.depth_low_res)
         print(type(self.output))
         print(type(self.depth_high_res))
         
@@ -303,8 +301,7 @@ class TrainEpoch(Epoch):
       
         psnr, ssim, mse_metric, mae_metric = self.calculate_metrics(result_img, DHR_img)
 
-        prediction, ft1, ft2 = self.model.forward(guiding_img,input_img)
-        loss = custom_loss(prediction,DHR_img, ft1, ft2)   
+        loss = custom_loss(self.output,DHR_img, f1, f2)   
 
         return loss, l_g_total, psnr, ssim, mse_metric, mae_metric
 
