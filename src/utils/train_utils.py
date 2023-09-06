@@ -207,7 +207,7 @@ class TrainEpoch(Epoch):
         out_dict = OrderedDict()
         out_dict['depth_low_res'] = self.depth_low_res.detach().to(self.device)
         out_dict['result'] = self.output.detach().to(self.device)
-        out_dict['RGB'] = self.RGB.detach().to(self.device)
+        out_dict['rgb'] = self.rgb.detach().to(self.device)
         if hasattr(self, 'depth_high_res'):
             out_dict['depth_high_res'] = self.depth_high_res.detach().to(self.device)
         return out_dict
@@ -303,7 +303,7 @@ class TrainEpoch(Epoch):
         self.optimizer_d.step()       
         
         visuals = self.get_current_visuals()
-        guiding_img = visuals['RGB'] 
+        guiding_img = visuals['rgb'] 
         result_img = visuals['result']
         input_img = visuals['depth_low_res']
         if 'depth_high_res' in visuals:
