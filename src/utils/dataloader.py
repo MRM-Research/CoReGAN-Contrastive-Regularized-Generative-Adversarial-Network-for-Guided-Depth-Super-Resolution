@@ -38,6 +38,8 @@ class Dataset():
         # read data
         rgb_image = np.load(self.rgb_list[i])
         target_image = np.load(self.target_list[i])
+        rgb_image = rgb_image.astype(np.float32)
+        target_image = target_image.astype(np.float32)
         
         if self.augmentation:
             
@@ -50,7 +52,6 @@ class Dataset():
                 depth_low_res_image = np.array(depth_low_res_image)
         
                 
-        target_image = np.array(target_image)
         
         if self.preprocessing:
             rgb_image = np.transpose(rgb_image,(2,0,1))
@@ -58,20 +59,15 @@ class Dataset():
             rgb_image[1] = self.standardize(rgb_image[1],0.4109165,0.29590342)
             rgb_image[2] = self.standardize(rgb_image[2],0.39225202,0.30930299)
             target_image = target_image/255.0
-            depth_low_res_image = torch.tensor(depth_low_res_image, dtype=torch.float32)
-            depth_low_res_image = depth_low_res_image.unsqueeze(0).unsqueeze(0)
-            
-            depth_low_res_upscaled_image = F.interpolate(depth_low_res_image, size=(480, 640), mode='bicubic', align_corners=False)
-            depth_low_res_upscaled_image = depth_low_res_upscaled_image.squeeze(0)
-            depth_low_res_upscaled_image = self.standardize(depth_low_res_upscaled_image,0.010965940520344745,0.0054354988929296135)
-            depth_low_res_upscaled_image = depth_low_res_upscaled_image.numpy()
+            depth_low_res_image = self.standardize(depth_low_res_image,0.010965940520344745,0.0054354988929296135)
 
         target_image = target_image[np.newaxis, :]
+        depth_low_res_image = depth_low_res_image[np.newaxis,:]
         
         #target_image = target_image.repeat(3,1,1)
         #depth_low_res_image = depth_low_res_image.repeat(3,1,1)
         
-        return rgb_image,depth_low_res_upscaled_image, target_image
+        return rgb_image,depth_low_res_image, target_image
     
     def load_img(self,directory):
         img_list = []
