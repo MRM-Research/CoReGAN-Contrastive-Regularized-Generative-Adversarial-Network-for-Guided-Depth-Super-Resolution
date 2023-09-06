@@ -5,7 +5,7 @@ import numpy as np
 from .misc import un_tan_fi
 from collections import OrderedDict
 from torchmetrics import PeakSignalNoiseRatio, StructuralSimilarityIndexMeasure
-import lr_scheduler
+from lr_scheduler import MultiStepRestartLR
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 
 from .loss import compute_gradient_penalty
@@ -220,9 +220,7 @@ class TrainEpoch(Epoch):
 
         for optimizer in self.optimizers:
             self.schedulers.append(
-                lr_scheduler.MultiStepRestartLR(optimizer, 
-                                                milestones=[50000, 100000, 200000, 300000], 
-                                                gamma=0.5))
+                MultiStepRestartLR(optimizer, milestones=[50000, 100000, 200000, 300000], gamma=0.5))
 
         for p in self.net_d.parameters():
             p.requires_grad = False
@@ -351,9 +349,7 @@ class ValidEpoch(Epoch):
 
         for optimizer in self.optimizers:
             self.schedulers.append(
-                lr_scheduler.MultiStepRestartLR(optimizer, 
-                                                milestones=[50000, 100000, 200000, 300000], 
-                                                gamma=0.5))
+                MultiStepRestartLR(optimizer, milestones=[50000, 100000, 200000, 300000], gamma=0.5))
 
         for p in self.net_d.parameters():
             p.requires_grad = False
