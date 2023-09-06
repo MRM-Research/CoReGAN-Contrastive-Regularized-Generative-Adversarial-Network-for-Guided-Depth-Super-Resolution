@@ -302,7 +302,7 @@ class TrainEpoch(Epoch):
             DHR_img = visuals['depth_high_res']
             del self.y
       
-        psnr, ssim, mse_metric, mae_metric = self.calculate_metrics(result_img, DHR_img)
+        psnr, ssim, mse_metric, mae_metric = calculate_metrics(result_img, DHR_img)
 
         loss = custom_loss(self.output,DHR_img, f1, f2)   
 
