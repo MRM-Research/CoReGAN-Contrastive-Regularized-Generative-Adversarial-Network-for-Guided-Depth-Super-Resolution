@@ -295,7 +295,7 @@ class TrainEpoch(Epoch):
         l_d.backward()
         self.optimizer_d.step()       
         
-        visuals = self.get_current_visuals()
+        visuals = get_current_visuals()
         guiding_img = visuals['RGB'] 
         result_img = visuals['result']
         input_img = visuals['depth_low_res']
