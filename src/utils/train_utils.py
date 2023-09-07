@@ -146,7 +146,6 @@ class Epoch:
                 if self.verbose:
                     s = self._format_logs(logs)
                     iterator.set_postfix_str(s)
-                iter = iter + 1
 
         return logs
 
