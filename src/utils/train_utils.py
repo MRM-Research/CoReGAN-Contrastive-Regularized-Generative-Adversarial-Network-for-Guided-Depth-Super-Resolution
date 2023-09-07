@@ -122,6 +122,9 @@ class Epoch:
         ) as iterator:
             for x,z,y in iterator:    
                 x, z, y = x.to(self.device), z.to(self.device), y.to(self.device)
+                print("x",x.shape)
+                print("y",y.shape)
+                print("z",z.shape)
                 loss, ssim, psnr, mae, mse = self.batch_update(iter,x,z,y) ### log both? how?
 
                 # update loss logs
@@ -191,18 +194,11 @@ class TrainEpoch(Epoch):
     # revert both images to 0, 1 from -1, 1
         img1 = un_tan_fi(img1)
         img2 = un_tan_fi(img2)
-        
-        img1 = img1.view(-1, img1.shape[-1])  # Reshape to a 2D array
-        img2 = img2.view(-1, img2.shape[-1])
-        
-        img1_cpu = img1.cpu()
-        img2_cpu = img2.cpu()
-        print(img1_cpu.shape)
-        print(img2_cpu.shape)
+    
         
     
-        MSE_metric = mean_squared_error(img1_cpu, img2_cpu)
-        MAE_metric = mean_absolute_error(img1_cpu, img2_cpu)
+        MSE_metric = mean_squared_error(img1, img2)
+        MAE_metric = mean_absolute_error(img1, img2)
     
     # for mse, mae check range of calc
     # for psnr, x by 255
