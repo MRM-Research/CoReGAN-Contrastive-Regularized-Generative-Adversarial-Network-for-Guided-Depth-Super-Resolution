@@ -120,7 +120,8 @@ class Epoch:
             file=sys.stdout,
             disable=not (self.verbose),
         ) as iterator:
-            for x,z,y in iterator:    
+            for iter,batch_data in enumerate(iterator): 
+                x,z,y = batch_data   
                 x, z, y = x.to(self.device), z.to(self.device), y.to(self.device)
                 print("x",x.shape)
                 print("y",y.shape)
