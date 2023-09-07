@@ -126,7 +126,7 @@ class Epoch:
                 print("x",x.shape)
                 print("y",y.shape)
                 print("z",z.shape)
-                loss, ssim, psnr, mae, mse = self.batch_update(iter,x,z,y) ### log both? how?
+                loss, mae, mse = self.batch_update(iter,x,z,y) ### log both? how?
 
                 # update loss logs
                 loss_value = loss.cpu().detach().numpy()
@@ -210,7 +210,7 @@ class TrainEpoch(Epoch):
         img2 = img2.round().int()
         img2 = img2.float()
 
-        return P(img1, img2).to(self.device), Z(img1, img2).to(self.device), mse.to(self.device), mape.to(self.device)
+        return mse.to(self.device), mape.to(self.device)
     
     def batch_update(self, current_iter,x,z,y):
         
@@ -415,6 +415,6 @@ class ValidEpoch(Epoch):
             DHR_img = visuals['depth_high_res']
             del self.depth_high_res
       
-        psnr, ssim, mse_metric, mae_metric = self.calculate_metrics(result_img, DHR_img)   
+        mse_metric, mae_metric = self.calculate_metrics(result_img, DHR_img)   
 
-        return l_g_total, psnr, ssim, mse_metric, mae_metric
+        return l_g_total,mse_metric, mae_metric
