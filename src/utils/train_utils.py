@@ -137,8 +137,8 @@ class Epoch:
                 # update metrics logs
                 metrics_meters["MSE"].add(mse.cpu().detach().numpy())
                 metrics_meters["MAE"].add(mae.cpu().detach().numpy())
-                metrics_meters["PSNR"].add(psnr.cpu().detach().numpy())
-                metrics_meters["SSIM"].add(ssim.cpu().detach().numpy())
+                #metrics_meters["PSNR"].add(psnr.cpu().detach().numpy())
+                #metrics_meters["SSIM"].add(ssim.cpu().detach().numpy())
 
                 metrics_logs = {k: v.mean for k, v in metrics_meters.items()}
                 logs.update(metrics_logs)
@@ -305,11 +305,11 @@ class TrainEpoch(Epoch):
             DHR_img = visuals['depth_high_res']
             del self.depth_high_res
       
-        psnr, ssim, mse_metric, mae_metric = self.calculate_metrics(result_img, DHR_img)
+        mse_metric, mae_metric = self.calculate_metrics(result_img, DHR_img)
 
         loss = custom_loss(self.output,DHR_img, f1, f2)   
 
-        return loss, psnr, ssim, mse_metric, mae_metric
+        return loss, mse_metric, mae_metric
 
 class ValidEpoch(Epoch):
     def __init__(self, model, optimizer, device="cpu", verbose=True, contrastive=False):
