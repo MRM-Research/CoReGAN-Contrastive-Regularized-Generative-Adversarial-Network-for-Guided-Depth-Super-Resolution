@@ -210,7 +210,7 @@ class TrainEpoch(Epoch):
         img2 = img2.round().int()
         img2 = img2.float()
 
-        return P(img1, img2).to(self.device), Z(img1, img2).to(self.device), mse, mape
+        return P(img1, img2), Z(img1, img2), mse, mape
     
     def batch_update(self, current_iter,x,z,y):
         
