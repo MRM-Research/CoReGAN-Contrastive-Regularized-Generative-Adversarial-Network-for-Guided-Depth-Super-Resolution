@@ -195,13 +195,11 @@ class TrainEpoch(Epoch):
         img1 = un_tan_fi(img1)
         img2 = un_tan_fi(img2)
     
-        
-    
-        MSE_metric = mean_squared_error(img1, img2)
-        MAE_metric = mean_absolute_error(img1, img2)
-    
     # for mse, mae check range of calc
     # for psnr, x by 255
+        mse = mean_squared_error(img1, img2).to(self.device)
+        mape = mean_absolute_error(img1,img2).to(self.device)
+        
     
         img1 = img1*255
         img1 = img1.round().int()
@@ -211,7 +209,7 @@ class TrainEpoch(Epoch):
         img2 = img2.round().int()
         img2 = img2.float()
 
-        return P(img1, img2).to(self.device), Z(img1, img2).to(self.device), MSE_metric.to(self.device), MAE_metric.to(self.device)
+        return P(img1, img2).to(self.device), Z(img1, img2).to(self.device), mse, mape
     
     def batch_update(self, current_iter,x,z,y):
         
