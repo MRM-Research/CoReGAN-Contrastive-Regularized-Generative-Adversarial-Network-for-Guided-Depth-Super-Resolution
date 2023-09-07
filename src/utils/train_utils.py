@@ -14,38 +14,8 @@ from .loss import custom_loss
 
 loss_dict = OrderedDict()
 
-def get_current_visuals(self):
-    out_dict = OrderedDict()
-    out_dict['depth_low_res'] = self.depth_low_res.detach().to(self.device)
-    out_dict['result'] = self.output.detach().to(self.device)
-    out_dict['RGB'] = self.RGB.detach().to(self.device)
-    if hasattr(self, 'depth_high_res'):
-        out_dict['depth_high_res'] = self.depth_high_res.detach().to(self.device)
-    return out_dict
-
 P = PeakSignalNoiseRatio()
 Z = StructuralSimilarityIndexMeasure()
-
-def calculate_metrics(self, img1, img2):
-    # revert both images to 0, 1 from -1, 1
-    img1 = un_tan_fi(img1)
-    img2 = un_tan_fi(img2)
-    
-    MSE_metric = mean_squared_error(img1, img2)
-    MAE_metric = mean_absolute_error(img1, img2)
-    
-    # for mse, mae check range of calc
-    # for psnr, x by 255
-    
-    img1 = img1*255
-    img1 = img1.round().int()
-    img1 = img1.float()
-
-    img2 = img2*255
-    img2 = img2.round().int()
-    img2 = img2.float()
-
-    return P(img1, img2).to(self.device), Z(img1, img2).to(self.device), MSE_metric.to(self.device), MAE_metric.to(self.device)
 
 class Meter(object):
     """Meters provide a way to keep track of important statistics in an online manner.
@@ -216,6 +186,27 @@ class TrainEpoch(Epoch):
         self.rgb = x
         self.depth_high_res = y
         self.depth_low_res = z
+        
+    def calculate_metrics(self, img1, img2):
+    # revert both images to 0, 1 from -1, 1
+        img1 = un_tan_fi(img1)
+        img2 = un_tan_fi(img2)
+    
+        MSE_metric = mean_squared_error(img1, img2)
+        MAE_metric = mean_absolute_error(img1, img2)
+    
+    # for mse, mae check range of calc
+    # for psnr, x by 255
+    
+        img1 = img1*255
+        img1 = img1.round().int()
+        img1 = img1.float()
+
+        img2 = img2*255
+        img2 = img2.round().int()
+        img2 = img2.float()
+
+        return P(img1, img2).to(self.device), Z(img1, img2).to(self.device), MSE_metric.to(self.device), MAE_metric.to(self.device)
     
     def batch_update(self, current_iter,x,z,y):
         
@@ -310,7 +301,7 @@ class TrainEpoch(Epoch):
             DHR_img = visuals['depth_high_res']
             del self.depth_high_res
       
-        psnr, ssim, mse_metric, mae_metric = calculate_metrics(result_img, DHR_img)
+        psnr, ssim, mse_metric, mae_metric = self.calculate_metrics(result_img, DHR_img)
 
         loss = custom_loss(self.output,DHR_img, f1, f2)   
 
