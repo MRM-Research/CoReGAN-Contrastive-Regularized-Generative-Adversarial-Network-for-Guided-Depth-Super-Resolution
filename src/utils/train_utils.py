@@ -194,11 +194,10 @@ class TrainEpoch(Epoch):
     # revert both images to 0, 1 from -1, 1
         img1 = un_tan_fi(img1)
         img2 = un_tan_fi(img2)
-    
-    # for mse, mae check range of calc
-    # for psnr, x by 255
-        mse = mean_squared_error(img1, img2).to(self.device)
-        mape = mean_absolute_error(img1,img2).to(self.device)
+        img1_cpu = img1.cpu()
+        img2_cpu = img2.cpu()
+        mse = mean_squared_error(img1_cpu, img2_cpu).to(self.device)
+        mape = mean_absolute_error(img1_cpu,img2_cpu).to(self.device)
         
     
         img1 = img1*255
