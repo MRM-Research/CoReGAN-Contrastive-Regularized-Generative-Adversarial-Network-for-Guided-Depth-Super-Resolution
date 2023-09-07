@@ -6,7 +6,7 @@ from .misc import un_tan_fi
 from collections import OrderedDict
 from torchmetrics import PeakSignalNoiseRatio, StructuralSimilarityIndexMeasure
 from .lr_scheduler import MultiStepRestartLR
-from sklearn.metrics import mean_squared_error, mean_absolute_error
+#from torchmetrics import mean_squared_error, mean_absolute_error
 
 from .loss import compute_gradient_penalty
 from .loss import GANLoss, MSELoss
@@ -196,8 +196,10 @@ class TrainEpoch(Epoch):
         img2 = un_tan_fi(img2)
         img1_cpu = img1.cpu()
         img2_cpu = img2.cpu()
-        mse = mean_squared_error(img1_cpu, img2_cpu).to(self.device)
-        mape = mean_absolute_error(img1_cpu,img2_cpu).to(self.device)
+        mse = torch.mean((img1_cpu - img2_cpu) ** 2)
+        epsilon = 1e-8  # To avoid division by zero
+        percentage_error = torch.abs((img1_cpu - img2_cpu) / (img2_cpu + epsilon))
+        mape = 100.0 * torch.mean(percentage_error)
         
     
         img1 = img1*255
