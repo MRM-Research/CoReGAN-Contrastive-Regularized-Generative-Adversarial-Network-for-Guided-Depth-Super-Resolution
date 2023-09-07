@@ -192,8 +192,14 @@ class TrainEpoch(Epoch):
         img1 = un_tan_fi(img1)
         img2 = un_tan_fi(img2)
         
+        img1 = img1.view(-1, img1.shape[-1])  # Reshape to a 2D array
+        img2 = img2.view(-1, img2.shape[-1])
+        
         img1_cpu = img1.cpu()
         img2_cpu = img2.cpu()
+        print(img1_cpu.shape)
+        print(img2_cpu.shape)
+        
     
         MSE_metric = mean_squared_error(img1_cpu, img2_cpu)
         MAE_metric = mean_absolute_error(img1_cpu, img2_cpu)
