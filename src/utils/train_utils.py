@@ -93,6 +93,28 @@ class Epoch:
         self.net_g.to(self.device)
         self.GLoss.to(self.device)
         self.MLoss.to(self.device)
+        
+    def calculate_metrics(self, img1, img2):
+    # revert both images to 0, 1 from -1, 1
+        img1 = un_tan_fi(img1)
+        img2 = un_tan_fi(img2)
+        img1_cpu = img1.cpu()
+        img2_cpu = img2.cpu()
+        mse = torch.mean((img1_cpu - img2_cpu) ** 2)
+        epsilon = 1e-8  # To avoid division by zero
+        percentage_error = torch.abs((img1_cpu - img2_cpu) / (img2_cpu + epsilon))
+        mape = 100.0 * torch.mean(percentage_error)
+        
+    
+        img1 = img1*255
+        img1 = img1.round().int()
+        img1 = img1.float()
+
+        img2 = img2*255
+        img2 = img2.round().int()
+        img2 = img2.float()
+
+        return mse.to(self.device), mape.to(self.device)
 
 
     def _format_logs(self, logs):
@@ -190,27 +212,6 @@ class TrainEpoch(Epoch):
         self.depth_high_res = y
         self.depth_low_res = z
         
-    def calculate_metrics(self, img1, img2):
-    # revert both images to 0, 1 from -1, 1
-        img1 = un_tan_fi(img1)
-        img2 = un_tan_fi(img2)
-        img1_cpu = img1.cpu()
-        img2_cpu = img2.cpu()
-        mse = torch.mean((img1_cpu - img2_cpu) ** 2)
-        epsilon = 1e-8  # To avoid division by zero
-        percentage_error = torch.abs((img1_cpu - img2_cpu) / (img2_cpu + epsilon))
-        mape = 100.0 * torch.mean(percentage_error)
-        
-    
-        img1 = img1*255
-        img1 = img1.round().int()
-        img1 = img1.float()
-
-        img2 = img2*255
-        img2 = img2.round().int()
-        img2 = img2.float()
-
-        return mse.to(self.device), mape.to(self.device)
     
     def batch_update(self, current_iter,x,z,y):
         
