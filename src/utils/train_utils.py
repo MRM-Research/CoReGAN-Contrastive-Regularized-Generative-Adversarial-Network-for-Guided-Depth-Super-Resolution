@@ -103,7 +103,7 @@ class Epoch:
         mse = torch.mean((img1_cpu - img2_cpu) ** 2)
         epsilon = 1e-8  # To avoid division by zero
         percentage_error = torch.abs((img1_cpu - img2_cpu) / (img2_cpu + epsilon))
-        mape = torch.mean(percentage_error)
+        mae = torch.mean(percentage_error)
         
     
         img1 = img1*255
@@ -114,7 +114,7 @@ class Epoch:
         img2 = img2.round().int()
         img2 = img2.float()
 
-        return mse.to(self.device), mape.to(self.device), P(img1,img2).to(self.device),Z(img1,img2).to(self.device)
+        return mse.to(self.device), mae.to(self.device), P(img1,img2).to(self.device),Z(img1,img2).to(self.device)
 
 
     def _format_logs(self, logs):
@@ -148,7 +148,7 @@ class Epoch:
                 print("x",x.shape)
                 print("y",y.shape)
                 print("z",z.shape)
-                loss, mae, mse = self.batch_update(iter,x,z,y) ### log both? how?
+                loss, mae, mse , psnr, ssim = self.batch_update(iter,x,z,y) ### log both? how?
 
                 # update loss logs
                 loss_value = loss.cpu().detach().numpy()
@@ -159,8 +159,8 @@ class Epoch:
                 # update metrics logs
                 metrics_meters["MSE"].add(mse.cpu().detach().numpy())
                 metrics_meters["MAE"].add(mae.cpu().detach().numpy())
-                #metrics_meters["PSNR"].add(psnr.cpu().detach().numpy())
-                #metrics_meters["SSIM"].add(ssim.cpu().detach().numpy())
+                metrics_meters["PSNR"].add(psnr.cpu().detach().numpy())
+                metrics_meters["SSIM"].add(ssim.cpu().detach().numpy())
 
                 metrics_logs = {k: v.mean for k, v in metrics_meters.items()}
                 logs.update(metrics_logs)
@@ -306,11 +306,11 @@ class TrainEpoch(Epoch):
             DHR_img = visuals['depth_high_res']
             del self.depth_high_res
       
-        mse_metric, mae_metric = self.calculate_metrics(result_img, DHR_img)
+        mse_metric, mae_metric, psnr ,ssim = self.calculate_metrics(result_img, DHR_img)
 
         loss = custom_loss(self.output,DHR_img, f1, f2)   
 
-        return loss, mse_metric, mae_metric
+        return loss, mse_metric, mae_metric, psnr, ssim
 
 class ValidEpoch(Epoch):
     def __init__(self, model, optimizer, device="cpu", verbose=True, contrastive=False):
