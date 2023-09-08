@@ -21,8 +21,7 @@ def train(epochs,
           device='cuda', 
           lr=1e-4,
           beta=1, 
-          loss_weight_loss=0.5,
-          loss_weight_gan=2000,
+          loss_weight=0.5,
           gan_type='standard'
           ):
 
@@ -50,9 +49,6 @@ def train(epochs,
         resize = resize()
     )
     a,b,c = train_dataset.__getitem__(0)
-    print(a.shape)
-    print(b.shape)
-    print(c.shape)
     # valid_dataset = Dataset(
     #     hr_val_dir,
     #     tar_val_dir,
@@ -71,7 +67,7 @@ def train(epochs,
     #valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=True)#, drop_last=True)
     #test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)\
         
-    loss = custom_loss(batch_size, beta=beta, loss_weight_loss=loss_weight_loss, gan_type=gan_type)
+    loss = custom_loss(batch_size, beta=beta, loss_weight=loss_weight, gan_type=gan_type)
     # loss_val = custom_loss_val(loss_weight=loss_weight, gan_type=gan_type)
 
     # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer,250)
@@ -79,8 +75,7 @@ def train(epochs,
         model=model,
         discriminator=disc,
         loss=loss,
-        loss_weight_loss=loss_weight_loss,
-        loss_weight_gan=loss_weight_gan,  
+        loss_weight=loss_weight, 
         device=device,
         verbose=True,
         contrastive=True
@@ -132,8 +127,8 @@ def train_model(configs):
     train(configs['epochs'], configs['batch_size'], configs['hr_dir'],
          configs['tar_dir'], configs['hr_val_dir'],
          configs['tar_val_dir'], configs['hr_test_dir'],configs['tar_test_dir'], configs['encoder'],
-         configs['encoder_weights'], configs['device'], configs['lr'], configs['beta'], configs['loss_weight_loss'],
-         configs['loss_weight_gan'], configs['gan_type'])
+         configs['encoder_weights'], configs['device'], configs['lr'], configs['beta'],
+         configs['loss_weight'],  configs['gan_type'])
     
 # 2. In metrics, change back to 0, 1 from -1, 1 , rest remains the same - dont clamp --> aryan
 # 5. change wand.config.update and init - init mse and mae as big value

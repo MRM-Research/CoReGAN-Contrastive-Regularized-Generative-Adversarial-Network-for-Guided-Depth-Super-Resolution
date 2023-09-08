@@ -5,13 +5,11 @@ import numpy as np
 from .misc import un_tan_fi
 from collections import OrderedDict
 from torchmetrics import PeakSignalNoiseRatio, StructuralSimilarityIndexMeasure
-from torchmetrics.regression import MeanSquaredError,MeanAbsoluteError
+from torchmetrics.regression import MeanSquaredError, MeanAbsoluteError
 from .lr_scheduler import MultiStepRestartLR
-#from torchmetrics import mean_squared_error, mean_absolute_error
 
 from .loss import compute_gradient_penalty
-from .loss import GANLoss, MSELoss
-from .loss import custom_loss
+from .loss import GANLoss, MSELoss, ContrastiveLoss
 
 loss_dict = OrderedDict()
 
@@ -73,33 +71,35 @@ class AverageValueMeter(Meter):
         self.m_s = 0.0
         self.std = np.nan
 
-
 class Epoch:
-    def __init__(self, gan_type, model, loss, stage_name, device="cpu", verbose=True):
+    def __init__(self, batch_size, gan_type, model, loss, stage_name, device="cpu", verbose=True):
         self.net_g = model
         self.loss = loss
         self.stage_name = stage_name
         self.verbose = verbose
         self.device = device
         self.gan_type = gan_type
+        self.batch_size = batch_size
         
         self.GLoss = GANLoss(gan_type=self.gan_type, real_label_val=1.0, fake_label_val=0.0, loss_weight=1)
         self.MLoss = MSELoss(loss_weight=1, reduction='mean')
+        self.CLoss = ContrastiveLoss(self.batch_size, temperature=0.5)
+        self.mse = MeanSquaredError().to(self.device)
+        self.mae = MeanAbsoluteError().to(self.device)
+        self.P = PeakSignalNoiseRatio().to(self.device)
+        self.Z = StructuralSimilarityIndexMeasure().to(self.device)
         self._to_device()
 
     def _to_device(self):
         self.net_g.to(self.device)
         self.GLoss.to(self.device)
         self.MLoss.to(self.device)
+        self.CLoss.to(self.device)
         
     def calculate_metrics(self, img1, img2):
     # revert both images to 0, 1 from -1, 1
         img1 = un_tan_fi(img1)
         img2 = un_tan_fi(img2)
-        
-        mse = MeanSquaredError().to(self.device)
-        mae = MeanAbsoluteError().to(self.device)
-        
     
         img1 = img1*255
         img1 = img1.round().int()
@@ -108,19 +108,15 @@ class Epoch:
         img2 = img2*255
         img2 = img2.round().int()
         img2 = img2.float()
-        
-        P = PeakSignalNoiseRatio().to(self.device)
-        Z = StructuralSimilarityIndexMeasure().to(self.device)
 
-        return mse(img1,img2).to(self.device), mae(img1,img2).to(self.device), P(img1,img2).to(self.device),Z(img1,img2).to(self.device)
-
+        return self.mse(img1,img2).to(self.device), self.mae(img1,img2).to(self.device), self.P(img1,img2).to(self.device), self.Z(img1,img2).to(self.device)
 
     def _format_logs(self, logs):
         str_logs = ["{} - {:.4}".format(k, v) for k, v in logs.items()]
         s = ", ".join(str_logs)
         return s
 
-    def batch_update(self,iter,x,z,y):
+    def batch_update(self, iter, x, z, y):
         raise NotImplementedError
 
     def on_epoch_start(self):
@@ -143,10 +139,7 @@ class Epoch:
             for iter,batch_data in enumerate(iterator): 
                 x,z,y = batch_data   
                 x, z, y = x.to(self.device), z.to(self.device), y.to(self.device)
-                print("x",x.shape)
-                print("y",y.shape)
-                print("z",z.shape)
-                loss, mse, mae , psnr, ssim = self.batch_update(iter,x,z,y) ### log both? how?
+                loss, mse, mae , psnr, ssim = self.batch_update(iter, x, z, y)
 
                 # update loss logs
                 loss_value = loss.cpu().detach().numpy()
@@ -170,7 +163,7 @@ class Epoch:
         return logs
 
 class TrainEpoch(Epoch):
-    def __init__(self, model, loss, discriminator, loss_weight_loss, loss_weight_gan, device="cpu", verbose=True, contrastive=True,gan_type = "standard"):
+    def __init__(self, beta, model, loss, discriminator, loss_weight, device="cpu", verbose=True, contrastive=True, gan_type = "standard"):
         super().__init__(
             model=model,
             loss=loss,
@@ -179,8 +172,8 @@ class TrainEpoch(Epoch):
             device=device,
             verbose=verbose,
         )
-        self.loss_weight_loss = loss_weight_loss
-        self.loss_weight_gan = loss_weight_gan
+        self.beta = beta
+        self.loss_weight = loss_weight
         self.net_g = model
         self.net_d = discriminator
         self.contrastive = contrastive
@@ -208,10 +201,9 @@ class TrainEpoch(Epoch):
     def feed_data(self,x,z,y):
         self.rgb = x
         self.depth_high_res = y
-        self.depth_low_res = z
-        
+        self.depth_low_res = z 
     
-    def batch_update(self, current_iter,x,z,y):
+    def batch_update(self, current_iter , x, z, y):
         
         self.feed_data(x,z,y)
        
@@ -232,17 +224,9 @@ class TrainEpoch(Epoch):
         self.optimizer_g.zero_grad()
 
         # generating output
-        self.output,f1,f2 = self.net_g(self.rgb, self.depth_low_res)
-        print(type(self.output))
-        print(type(self.depth_high_res))
-        
-        # initiliazing MSELoss from Epoch
-        #self.cri_pix = self.MLoss(self.output, self.depth_high_res).to(self.device)
-        #print("cri_pix - ", self.cri_pix)
-        
-        # initializing GANLoss from Epoch
-        #self.cri_gan = self.GLoss(fake_g_pred, True, is_disc=False).to(self.device)
+        self.output, f1, f2 = self.net_g(self.rgb, self.depth_low_res)     
 
+        # initiliazing l_g_total to 0
         l_g_total = 0
         loss_dict = OrderedDict()           
 
@@ -259,6 +243,9 @@ class TrainEpoch(Epoch):
             l_g_gan = self.GLoss(fake_g_pred, True, is_disc=False).to(self.device)
             l_g_total += l_g_gan
             loss_dict['l_g_gan'] = l_g_gan
+
+            # contrastive loss
+            l_g_total + (self.beta)*self.CLoss(f1, f2).to(self.device)
 
             # backprop for generator
             l_g_total.backward()
@@ -281,7 +268,6 @@ class TrainEpoch(Epoch):
         loss_dict['out_d_real'] = torch.mean(real_d_pred.detach())
 
         # fake image generation
-        
         fake_d_pred = self.net_d(self.output)
         l_d_fake = self.GLoss(fake_d_pred, False, is_disc=True).to(self.device)
         loss_dict['l_d_fake'] = l_d_fake
@@ -304,11 +290,9 @@ class TrainEpoch(Epoch):
             DHR_img = visuals['depth_high_res']
             del self.depth_high_res
       
-        mse_metric, mae_metric, psnr ,ssim = self.calculate_metrics(result_img, DHR_img)
+        mse_metric, mae_metric, psnr ,ssim = self.calculate_metrics(result_img, DHR_img)  
 
-        loss = custom_loss(self.output,DHR_img, f1, f2)   
-
-        return loss, mse_metric, mae_metric, psnr, ssim
+        return l_g_total, mse_metric, mae_metric, psnr, ssim
 
 class ValidEpoch(Epoch):
     def __init__(self, model, optimizer, device="cpu", verbose=True, contrastive=False):
