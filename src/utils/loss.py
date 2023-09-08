@@ -23,10 +23,12 @@ class ContrastiveLoss(nn.Module):
         super().__init__()
         self.batch_size = batch_size
         self.temperature = temperature
-        mask = torch.ones(batch_size * 2, batch_size * 2, dtype=torch.float32)
-        print(mask)
-        mask[range(batch_size * 2), range(batch_size * 2)] = 0.0
-        self.mask = mask
+        # mask = torch.ones(batch_size * 2, batch_size * 2, dtype=torch.float32)
+        # print(mask)
+        # mask[range(batch_size * 2), range(batch_size * 2)] = 0.0
+        # self.mask = mask
+        mask = torch.ones((int(batch_size) * 2, int(batch_size) * 2), dtype=torch.float32)
+
 
     def calc_similarity_batch(self, a, b):
         representations = torch.cat([a, b], dim=0)
