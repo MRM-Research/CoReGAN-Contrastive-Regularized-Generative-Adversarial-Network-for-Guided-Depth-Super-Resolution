@@ -103,7 +103,7 @@ class Epoch:
         mse = torch.mean((img1_cpu - img2_cpu) ** 2)
         epsilon = 1e-8  # To avoid division by zero
         percentage_error = torch.abs((img1_cpu - img2_cpu) / (img2_cpu + epsilon))
-        mape = 100.0 * torch.mean(percentage_error)
+        mape = torch.mean(percentage_error)
         
     
         img1 = img1*255
