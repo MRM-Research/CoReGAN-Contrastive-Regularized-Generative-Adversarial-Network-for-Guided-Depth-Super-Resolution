@@ -96,8 +96,6 @@ class Epoch:
         img1 = un_tan_fi(img1)
         img2 = un_tan_fi(img2)
         
-        img1 = img1.to(self.device)
-        img2 = img2.to(self.device)
         mse = torch.mean((img1 - img2) ** 2)
         mae = torch.abs(img1 - img2).mean()
         mae = mae.item()
