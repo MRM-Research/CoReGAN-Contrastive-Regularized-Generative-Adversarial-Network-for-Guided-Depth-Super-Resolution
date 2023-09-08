@@ -145,6 +145,9 @@ class Epoch:
             for iter,batch_data in enumerate(iterator): 
                 x,z,y = batch_data   
                 x, z, y = x.to(self.device), z.to(self.device), y.to(self.device)
+                print("x",x.shape)
+                print("y",y.shape)
+                print("z",z.shape)
                 loss, mae, mse , psnr, ssim = self.batch_update(iter,x,z,y) ### log both? how?
 
                 # update loss logs
