@@ -4,7 +4,8 @@ from tqdm import tqdm as tqdm
 import numpy as np
 from .misc import un_tan_fi
 from collections import OrderedDict
-from torchmetrics import PeakSignalNoiseRatio, StructuralSimilarityIndexMeasure
+from torchmetrics import PeakSignalNoiseRatio, StructuralSimilarityIndexMeasure,
+from torchmetrics.regression import MeanSquaredError,MeanAbsoluteError
 from .lr_scheduler import MultiStepRestartLR
 #from torchmetrics import mean_squared_error, mean_absolute_error
 
@@ -96,9 +97,8 @@ class Epoch:
         img1 = un_tan_fi(img1)
         img2 = un_tan_fi(img2)
         
-        mse = torch.mean((img1 - img2) ** 2)
-        mae = torch.abs(img1 - img2).mean()
-        mae = mae.item()
+        mse = MeanSquaredError(img1,img2).to(self.device)
+        mae = MeanAbsoluteError(img1,img2).to(self.device)
         
     
         img1 = img1*255
