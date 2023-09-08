@@ -97,8 +97,8 @@ class Epoch:
         img1 = un_tan_fi(img1)
         img2 = un_tan_fi(img2)
         
-        mse = MeanSquaredError(img1,img2).to(self.device)
-        mae = MeanAbsoluteError(img1,img2).to(self.device)
+        mse = MeanSquaredError().to(self.device)
+        mae = MeanAbsoluteError().to(self.device)
         
     
         img1 = img1*255
@@ -112,7 +112,7 @@ class Epoch:
         P = PeakSignalNoiseRatio().to(self.device)
         Z = StructuralSimilarityIndexMeasure().to(self.device)
 
-        return mse.to(self.device), mae.to(self.device), P(img1,img2).to(self.device),Z(img1,img2).to(self.device)
+        return mse(img1,img2).to(self.device), mae(img1,img2).to(self.device), P(img1,img2).to(self.device),Z(img1,img2).to(self.device)
 
 
     def _format_logs(self, logs):
