@@ -142,7 +142,7 @@ class Epoch:
                 loss, mse, mae , psnr, ssim = self.batch_update(iter, x, z, y)
 
                 # update loss logs
-                loss_value = loss.cpu().detach().numpy()
+                loss_value = torch.tensor(loss).cpu().detach().numpy()
                 loss_meter.add(loss_value)
                 loss_logs = {self.loss.__name__: loss_meter.mean}
                 logs.update(loss_logs)
