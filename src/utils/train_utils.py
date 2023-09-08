@@ -14,9 +14,6 @@ from .loss import custom_loss
 
 loss_dict = OrderedDict()
 
-P = PeakSignalNoiseRatio()
-Z = StructuralSimilarityIndexMeasure()
-
 class Meter(object):
     """Meters provide a way to keep track of important statistics in an online manner.
     This class is abstract, but provides a standard interface for all meters to follow.
@@ -98,12 +95,12 @@ class Epoch:
     # revert both images to 0, 1 from -1, 1
         img1 = un_tan_fi(img1)
         img2 = un_tan_fi(img2)
-        img1_cpu = img1.cpu()
-        img2_cpu = img2.cpu()
-        mse = torch.mean((img1_cpu - img2_cpu) ** 2)
-        epsilon = 1e-8  # To avoid division by zero
-        percentage_error = torch.abs((img1_cpu - img2_cpu) / (img2_cpu + epsilon))
-        mae = torch.mean(percentage_error)
+        
+        img1 = img1.to(self.device)
+        img2 = img2.to(self.device)
+        mse = torch.mean((img1 - img2) ** 2)
+        mae = torch.abs(img1 - img2).mean()
+        mae = mae.item()
         
     
         img1 = img1*255
@@ -113,6 +110,9 @@ class Epoch:
         img2 = img2*255
         img2 = img2.round().int()
         img2 = img2.float()
+        
+        P = PeakSignalNoiseRatio().to(self.device)
+        Z = StructuralSimilarityIndexMeasure().to(self.device)
 
         return mse.to(self.device), mae.to(self.device), P(img1,img2).to(self.device),Z(img1,img2).to(self.device)
 
@@ -145,9 +145,6 @@ class Epoch:
             for iter,batch_data in enumerate(iterator): 
                 x,z,y = batch_data   
                 x, z, y = x.to(self.device), z.to(self.device), y.to(self.device)
-                print("x",x.shape)
-                print("y",y.shape)
-                print("z",z.shape)
                 loss, mae, mse , psnr, ssim = self.batch_update(iter,x,z,y) ### log both? how?
 
                 # update loss logs
