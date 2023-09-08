@@ -234,7 +234,6 @@ class TrainEpoch(Epoch):
             
             # pixel loss
             l_g_pix = self.MLoss(self.output, self.depth_high_res).to(self.device)
-            print("l_g_pix - ", l_g_pix)
             l_g_total += l_g_pix
             loss_dict['l_g_pix'] = l_g_pix
 
