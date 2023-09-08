@@ -114,7 +114,7 @@ class Epoch:
         img2 = img2.round().int()
         img2 = img2.float()
 
-        return mse.to(self.device), mape.to(self.device)
+        return mse.to(self.device), mape.to(self.device), P(img1,img2).to(self.device),Z(img1,img2).to(self.device)
 
 
     def _format_logs(self, logs):
