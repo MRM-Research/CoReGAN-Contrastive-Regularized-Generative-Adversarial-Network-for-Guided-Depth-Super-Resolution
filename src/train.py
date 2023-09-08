@@ -17,8 +17,7 @@ def main(args):
         'encoder_weights': args.encoder_weights,
         'lr': args.lr,
         'beta': args.beta,
-        'loss_weight_loss': args.loss_weight_loss,
-        'loss_weight_gan': args.loss_weight_gan,
+        'loss_weight': args.loss_weight,
         'gan_type': args.gan_type
     }
     wandb.init(project="DepthMapSR", entity="kasliwal17",
@@ -28,7 +27,7 @@ def main(args):
                        'max_psnr':0, 
                        'min_mse': 1e6, 
                        'min_mae': 1e6, 
-                       'loss_weight_loss': args.loss_weight_gan, 
+                       'loss_weight': args.loss_weight,
                        'encoder':args.encoder,
                        'BS': args.batch_size,
                        'gan_type': args.gan_type
@@ -51,8 +50,7 @@ if __name__ == '__main__':
     parser.add_argument('--encoder_weights', type=str, required=False, default='imagenet')
     parser.add_argument('--lr', type=float, required=False, default=1e-4)
     parser.add_argument('--beta', type=float, required=False, default=1)
-    parser.add_argument('--loss_weight_loss', type=float, required=False, default=0.5)
-    parser.add_argument('--loss_weight_gan', type=float, required=False, default=2000)
+    parser.add_argument('--loss_weight', type=float, required=False, default=0.5)
     parser.add_argument('--gan_type', type=str, required=False, default='standard')
     arguments = parser.parse_args()
     main(arguments)
