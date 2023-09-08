@@ -24,12 +24,6 @@ class ContrastiveLoss(nn.Module):
         self.batch_size = batch_size
         self.temperature = temperature
         self.mask = (~torch.eye(batch_size * 2, batch_size * 2, dtype=bool)).float()
-        # mask = torch.ones(batch_size * 2, batch_size * 2, dtype=torch.float32)
-        # print(mask)
-        # mask[range(batch_size * 2), range(batch_size * 2)] = 0.0
-        # self.mask = mask
-        # mask = torch.ones((int(batch_size) * 2, int(batch_size) * 2), dtype=torch.float32)
-
 
     def calc_similarity_batch(self, a, b):
         representations = torch.cat([a, b], dim=0)
@@ -231,7 +225,7 @@ def compute_gradient_penalty(D, real_samples, fake_samples, device):
     return gradient_penalty
 
 class custom_loss(base.Loss):
-    def __init__(self, batch_size, beta=0.5, loss_weight_loss=0.5, gan_type='standard'):
+    def __init__(self, batch_size, beta=0.5, loss_weight=0.5, gan_type='standard'):
         super().__init__()
 
         self.gan_type = gan_type
@@ -239,7 +233,7 @@ class custom_loss(base.Loss):
         self.GANLoss = GANLoss(self.gan_type)
         self.mse = nn.MSELoss()
         
-        self.loss_weight_loss = loss_weight_loss
+        self.loss_weight = loss_weight
         self.beta = beta
 
     def forward(self, y_pr, y_gt, ft1=None, ft2=None):
@@ -254,7 +248,7 @@ class custom_loss(base.Loss):
         g = self.GANLoss(y_pr, y_gt, is_disc=False)
         m = self.mse(y_pr, y_gt)
 
-        return (self.beta)*c + (self.loss_weight_loss)*m + (1-self.loss_weight_loss)*g
+        return (self.beta)*c + (self.loss_weight)*m + (1-self.loss_weight)*g
     
 class custom_loss_val(base.Loss):
     """
