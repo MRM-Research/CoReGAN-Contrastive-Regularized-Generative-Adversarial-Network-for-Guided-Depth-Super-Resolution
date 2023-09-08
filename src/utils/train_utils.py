@@ -163,8 +163,9 @@ class Epoch:
         return logs
 
 class TrainEpoch(Epoch):
-    def __init__(self, beta, model, loss, discriminator, loss_weight, device="cpu", verbose=True, contrastive=True, gan_type = "standard"):
+    def __init__(self, beta, model, loss, discriminator, loss_weight, device="cpu", verbose=True, contrastive=True, gan_type = "standard", batch_size = 8):
         super().__init__(
+            batch_size=batch_size,
             model=model,
             loss=loss,
             gan_type=gan_type,

@@ -81,6 +81,7 @@ def train(epochs,
         verbose=True,
         contrastive=True,
         gan_type=gan_type,
+        batch_size = batch_size
     )
     # valid_epoch = ValidEpoch(
     #     model=model, 
