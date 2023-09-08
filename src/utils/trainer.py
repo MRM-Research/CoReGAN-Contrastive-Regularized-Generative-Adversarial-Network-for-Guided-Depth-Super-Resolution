@@ -72,13 +72,15 @@ def train(epochs,
 
     # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer,250)
     train_epoch = TrainEpoch(
+        beta=beta,
         model=model,
-        discriminator=disc,
         loss=loss,
+        discriminator=disc,
         loss_weight=loss_weight, 
         device=device,
         verbose=True,
-        contrastive=True
+        contrastive=True,
+        gan_type=gan_type,
     )
     # valid_epoch = ValidEpoch(
     #     model=model, 
