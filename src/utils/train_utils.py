@@ -148,7 +148,7 @@ class Epoch:
                 print("x",x.shape)
                 print("y",y.shape)
                 print("z",z.shape)
-                loss, mae, mse , psnr, ssim = self.batch_update(iter,x,z,y) ### log both? how?
+                loss, mse, mae , psnr, ssim = self.batch_update(iter,x,z,y) ### log both? how?
 
                 # update loss logs
                 loss_value = loss.cpu().detach().numpy()
