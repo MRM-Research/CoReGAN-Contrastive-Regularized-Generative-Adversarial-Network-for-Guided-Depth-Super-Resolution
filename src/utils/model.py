@@ -149,19 +149,19 @@ class Unet(SegmentationModel):
                                        nn.AdaptiveAvgPool2d(1),
                                        nn.Flatten(),
                                        nn.Linear(in_features=self.encoder.out_channels[-1], out_features=512),
-                                       nn.InstanceNorm1d(512),     # changed from BatchNorm1d
+                                       nn.BatchNorm1d(512),     
                                        nn.ReLU(),
                                        nn.Linear(in_features=512, out_features=64),
-                                       nn.InstanceNorm1d(64),      # changed from BatchNorm1d
+                                       nn.BatchNorm1d(64),     
                                    )
             self.contrastive_head2= nn.Sequential(
                                        nn.AdaptiveAvgPool2d(1),
                                        nn.Flatten(),
                                        nn.Linear(in_features=self.encoder.out_channels[-1], out_features=512),
-                                       nn.InstanceNorm1d(512),    # changed from BatchNorm1d
+                                       nn.BatchNorm1d(512),
                                        nn.ReLU(),
                                        nn.Linear(in_features=512, out_features=64),
-                                       nn.InstanceNorm1d(64),       # changed from BatchNorm1d
+                                       nn.BatchNorm1d(64),      
                                    )
 
         self.name = "u-{}".format(encoder_name)
