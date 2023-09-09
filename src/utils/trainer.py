@@ -40,6 +40,8 @@ def train(epochs,
 
     disc = Discriminator().to(device)
 
+    #preprocessing_fn = smp.encoders.get_preprocessing_fn(encoder, encoder_weights)
+
     train_dataset = Dataset(
         hr_dir,
         tar_dir,
@@ -65,11 +67,15 @@ def train(epochs,
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=True)#, drop_last=True)
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)\
+        
+    loss = custom_loss(batch_size, beta=beta, loss_weight=loss_weight, gan_type=gan_type)
+    loss_val = custom_loss_val(loss_weight=loss_weight, gan_type=gan_type)
 
     # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer,250)
     train_epoch = TrainEpoch(
         beta=beta,
         model=model,
+        loss=loss,
         discriminator=disc,
         loss_weight=loss_weight, 
         device=device,
@@ -79,12 +85,11 @@ def train(epochs,
         batch_size = batch_size
     )
     valid_epoch = ValidEpoch(
-        model=model,
-        discriminator=disc,
-        loss_weight=loss_weight,
+        model=model, 
+        loss=loss, 
         device=device,
         verbose=True,
-        gan_type=gan_type,
+        contrastive=True
     )
 
     min_mse = 0
