@@ -174,13 +174,7 @@
 #         self.name = "u-{}".format(encoder_name)
 #         self.initialize()
 
-# # not a part of U-Net class
-# def discriminator_block(in_filters, out_filters, normalization=False):
-#     layers = [nn.Conv2d(in_filters, out_filters, 3, stride=2, padding=1)]
-#     layers.append(nn.LeakyReLU(0.2))
-#     if normalization:
-#         layers.append(nn.InstanceNorm2d(out_filters, affine=True))
-#     return layers
+
 
 from typing import Optional, Union, List
 import torch
@@ -352,6 +346,14 @@ class Unet(SegmentationModel):
 
         self.name = "u-{}".format(encoder_name)
         self.initialize()
+
+# not a part of U-Net class
+def discriminator_block(in_filters, out_filters, normalization=False):
+    layers = [nn.Conv2d(in_filters, out_filters, 3, stride=2, padding=1)]
+    layers.append(nn.LeakyReLU(0.2))
+    if normalization:
+        layers.append(nn.InstanceNorm2d(out_filters, affine=True))
+    return layers
 
 class Discriminator(nn.Module):
     def __init__(self):
