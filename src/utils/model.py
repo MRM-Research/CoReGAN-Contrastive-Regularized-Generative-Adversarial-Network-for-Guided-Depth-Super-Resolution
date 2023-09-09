@@ -105,7 +105,7 @@ class Unet(SegmentationModel):
         decoder_use_batchnorm: bool = True,
         decoder_channels: List[int] = (256, 128, 64, 32, 16),
         decoder_attention_type: Optional[str] = None,
-        in_channels: int = 3,
+        in_channels: int = 1,
         classes: int = 3,
         activation: Optional[Union[str, callable]] = None,
         contrastive: bool = False,
@@ -183,7 +183,7 @@ class Discriminator(nn.Module):
 
         self.model = nn.Sequential(
             nn.Upsample(size=(256, 256), mode='bilinear', align_corners=False),
-            nn.Conv2d(3, 16, 3, stride=2, padding=1),
+            nn.Conv2d(1, 16, 3, stride=2, padding=1),
             nn.LeakyReLU(0.2),
             nn.InstanceNorm2d(16, affine=True),
             *discriminator_block(16, 32),
