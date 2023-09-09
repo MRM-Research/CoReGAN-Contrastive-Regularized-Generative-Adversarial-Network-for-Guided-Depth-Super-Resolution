@@ -199,15 +199,16 @@ class TrainEpoch(Epoch):
             out_dict['depth_high_res'] = self.depth_high_res.detach().to(self.device)
         return out_dict
     
-    def batch_update(self, current_iter , x, z, y):
+    def batch_update(self, current_iter , rgb, depth_high_res, depth_low_res):
         
-        self.rgb,self.depth_high_res,self.depth_low_res = x,y,z
+        self.rgb,self.depth_high_res,self.depth_low_res = rgb, depth_high_res, depth_low_res
        
-        # creating a list of optimizers to allow integration of lr_scheduler
+        # creating a list of optimizers to allow integration of lr_schedul
         self.optimizers = [self.optimizer_g, self.optimizer_d]
         
         self.net_d_iters = 1
         self.net_d_init_iters = 0
+
 
         for optimizer in self.optimizers:
             self.schedulers.append(
