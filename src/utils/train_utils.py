@@ -349,9 +349,6 @@ class ValidEpoch(Epoch):
         for p in self.net_d.parameters():
             p.requires_grad = True
 
-        # setting net_d gradients to zero
-        self.optimizer_d.zero_grad()
-
         # generating output - not using f1, f2 for valid epoch since contrastive loss is not used
         self.output, f1, f2 = self.net_g(self.rgb, self.depth_low_res)
         
