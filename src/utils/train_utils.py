@@ -342,9 +342,6 @@ class ValidEpoch(Epoch):
             l_g_total += l_g_gan
             loss_dict['l_g_gan'] = l_g_gan
 
-            # backprop for generator
-            l_g_total.backward()
-
         # optimize net_d
         for p in self.net_d.parameters():
             p.requires_grad = True
@@ -368,9 +365,6 @@ class ValidEpoch(Epoch):
         self.gp_weight = 100
         gradient_penalty = compute_gradient_penalty(self.net_d, self.depth_high_res, self.output, self.device)
         l_d = l_d_real + l_d_fake + (self.gp_weight * gradient_penalty)
-
-        # backprop for discriminator
-        l_d.backward() 
         
         visuals = self.get_current_visuals()
         guiding_img = visuals['rgb'] 
