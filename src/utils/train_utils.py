@@ -137,9 +137,9 @@ class Epoch:
             disable=not (self.verbose),
         ) as iterator:
             for iter,batch_data in enumerate(iterator): 
-                x,z,y = batch_data   
-                x, z, y = x.to(self.device), z.to(self.device), y.to(self.device)
-                loss, mse, mae , psnr, ssim = self.batch_update(iter, x, z, y)
+                rgb,depth_low_res,depth_high_res = batch_data   
+                rgb,depth_low_res,depth_high_res = rgb.to(self.device), depth_low_res.to(self.device), depth_high_res.to(self.device)
+                loss, mse, mae , psnr, ssim = self.batch_update(iter, rgb, depth_low_res, depth_high_res)
 
                 # update loss logs
                 loss_value = torch.tensor(loss).cpu().detach().numpy()
