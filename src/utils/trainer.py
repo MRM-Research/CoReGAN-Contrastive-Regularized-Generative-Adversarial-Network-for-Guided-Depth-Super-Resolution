@@ -97,7 +97,7 @@ def train(epochs,
         
         print('\nEpoch: {}'.format(i))
         train_logs = train_epoch.run(train_loader)
-        # valid_logs = valid_epoch.run(valid_loader)
+        #valid_logs = valid_epoch.run(valid_loader)
         
         print(train_logs)
         wandb.log({'epoch':i+1,
