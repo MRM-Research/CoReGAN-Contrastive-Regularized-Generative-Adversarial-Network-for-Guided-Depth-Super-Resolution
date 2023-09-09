@@ -312,24 +312,16 @@ class ValidEpoch(Epoch):
         self.net_g.eval()
         self.net_d.eval()
 
-    def batch_update(self, current_iter):
-       
-        # creating a list of optimizers to allow integration of lr_scheduler
-        self.optimizers = [self.optimizer_g, self.optimizer_d]
+    def batch_update(self, current_iter, rgb, depth_high_res, depth_low_res):
+
+        self.rgb,self.depth_high_res,self.depth_low_res = rgb, depth_high_res, depth_low_res
         
         self.net_d_iters = 1
         self.net_d_init_iters = 0
 
-        for optimizer in self.optimizers:
-            self.schedulers.append(
-                MultiStepRestartLR(optimizer, milestones=[50000, 100000, 200000, 300000], gamma=0.5))
-
         for p in self.net_d.parameters():
             p.requires_grad = False
         
-        # setting net_g gradients to zero
-        self.optimizer_g.zero_grad()
-
         # generating output
         self.output, f1, f2 = self.net_g(self.rgb, self.depth_low_res)     
 
@@ -352,7 +344,6 @@ class ValidEpoch(Epoch):
 
             # backprop for generator
             l_g_total.backward()
-            self.optimizer_g.step()
 
         # optimize net_d
         for p in self.net_d.parameters():
@@ -382,8 +373,7 @@ class ValidEpoch(Epoch):
         l_d = l_d_real + l_d_fake + (self.gp_weight * gradient_penalty)
 
         # backprop for discriminator
-        l_d.backward()
-        self.optimizer_d.step()       
+        l_d.backward() 
         
         visuals = self.get_current_visuals()
         guiding_img = visuals['rgb'] 
