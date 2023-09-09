@@ -14,7 +14,6 @@ class Dataset():
             augmentation=None, 
             preprocessing=None,
             resize = None,
-        
     ):
         self.rgb_list = self.load_img(rgb_dir)
         self.target_list = self.load_img(target_dir)
@@ -33,45 +32,86 @@ class Dataset():
         
         return image_standardized
     
-    def __getitem__(self, i):
+    # def __getitem__(self, i):
         
+    #     # read data
+    #     rgb_image = np.load(self.rgb_list[i])
+    #     target_image = np.load(self.target_list[i])
+    #     rgb_image = rgb_image.astype(np.float32)
+    #     target_image = target_image.astype(np.float32)
+        
+    #     if self.augmentation:
+            
+    #         augmented = self.augmentation(image=rgb_image, target=target_image)
+    #         rgb_image,target_image = augmented['image'],augmented['target']
+            
+    #         if self.resize:
+    #             transform = self.resize(image = target_image)
+    #             depth_low_res_image = transform['image']
+    #             depth_low_res_image = np.array(depth_low_res_image) 
+        
+    #     if self.preprocessing:
+    #         rgb_image = np.transpose(rgb_image,(2,0,1))
+    #         rgb_image[0] = self.standardize(rgb_image[0],0.48057137,0.28918139)
+    #         rgb_image[1] = self.standardize(rgb_image[1],0.4109165,0.29590342)
+    #         rgb_image[2] = self.standardize(rgb_image[2],0.39225202,0.30930299)
+    #         target_image = target_image/255.0
+    #         depth_low_res_image = self.standardize(depth_low_res_image,0.010965940520344745,0.0054354988929296135)
+
+    #     target_image = target_image[np.newaxis, :]
+    #     depth_low_res_image = depth_low_res_image[np.newaxis,:]
+    #     depth_low_res_image = torch.from_numpy(depth_low_res_image)
+    #     rgb_image = torch.from_numpy(rgb_image)
+    #     target_image = torch.from_numpy(target_image)
+        
+    #     #target_image = target_image.repeat(3,1,1)
+    #     #depth_low_res_image = depth_low_res_image.repeat(3,1,1)
+        
+    #     return rgb_image,depth_low_res_image, target_image
+    
+    def __getitem__(self, i):
+    
         # read data
         rgb_image = np.load(self.rgb_list[i])
         target_image = np.load(self.target_list[i])
         rgb_image = rgb_image.astype(np.float32)
         target_image = target_image.astype(np.float32)
-        
+    
         if self.augmentation:
-            
             augmented = self.augmentation(image=rgb_image, target=target_image)
-            rgb_image,target_image = augmented['image'],augmented['target']
-            
-            if self.resize:
-                transform = self.resize(image = target_image)
-                depth_low_res_image = transform['image']
-                depth_low_res_image = np.array(depth_low_res_image)
+            rgb_image, target_image = augmented['image'], augmented['target']
         
-                
-        
+        if self.resize:
+            transform = self.resize(image=target_image)
+            depth_low_res_image = transform['image']
+            depth_low_res_image = np.array(depth_low_res_image) 
+    
         if self.preprocessing:
-            rgb_image = np.transpose(rgb_image,(2,0,1))
-            rgb_image[0] = self.standardize(rgb_image[0],0.48057137,0.28918139)
-            rgb_image[1] = self.standardize(rgb_image[1],0.4109165,0.29590342)
-            rgb_image[2] = self.standardize(rgb_image[2],0.39225202,0.30930299)
-            target_image = target_image/255.0
-            depth_low_res_image = self.standardize(depth_low_res_image,0.010965940520344745,0.0054354988929296135)
+            rgb_image = np.transpose(rgb_image, (2, 0, 1))
+            rgb_image[0] = self.standardize(rgb_image[0], 0.48057137, 0.28918139)
+            rgb_image[1] = self.standardize(rgb_image[1], 0.4109165, 0.29590342)
+            rgb_image[2] = self.standardize(rgb_image[2], 0.39225202, 0.30930299)
+            target_image = target_image / 255.0
+            depth_low_res_image = self.standardize(depth_low_res_image, 0.010965940520344745, 0.0054354988929296135)
 
-        target_image = target_image[np.newaxis, :]
-        depth_low_res_image = depth_low_res_image[np.newaxis,:]
+        # Print the shape before stacking
+        print(f"Shape of target_image before stacking: {target_image.shape}")
+        print(f"Shape of depth_low_res_image before stacking: {depth_low_res_image.shape}")
+
+        # Stack to make them 3 channels
+        target_image = np.repeat(target_image[np.newaxis, :], 3, axis=0)
+        depth_low_res_image = np.repeat(depth_low_res_image[np.newaxis, :], 3, axis=0)
+
+        # Print the shape after stacking
+        print(f"Shape of target_image after stacking: {target_image.shape}")
+        print(f"Shape of depth_low_res_image after stacking: {depth_low_res_image.shape}")
+
         depth_low_res_image = torch.from_numpy(depth_low_res_image)
         rgb_image = torch.from_numpy(rgb_image)
         target_image = torch.from_numpy(target_image)
         
-        #target_image = target_image.repeat(3,1,1)
-        #depth_low_res_image = depth_low_res_image.repeat(3,1,1)
-        
-        return rgb_image,depth_low_res_image, target_image
-    
+        return rgb_image, depth_low_res_image, target_image
+
     def load_img(self,directory):
         img_list = []
         files = os.listdir(directory)

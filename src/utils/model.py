@@ -120,7 +120,7 @@ class Unet(SegmentationModel):
         )
         self.encoder2 = get_encoder(
             encoder_name,
-            in_channels=1,
+            in_channels=in_channels,
             depth=encoder_depth,
             weights=encoder_weights,
         )
@@ -181,7 +181,7 @@ class Discriminator(nn.Module):
 
         self.model = nn.Sequential(
             nn.Upsample(size=(256, 256), mode='bilinear', align_corners=False),
-            nn.Conv2d(1, 16, 3, stride=2, padding=1),
+            nn.Conv2d(3, 16, 3, stride=2, padding=1),
             nn.LeakyReLU(0.2),
             nn.InstanceNorm2d(16, affine=True),
             *discriminator_block(16, 32),
