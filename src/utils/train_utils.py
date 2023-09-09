@@ -187,8 +187,8 @@ class TrainEpoch(Epoch):
                                     lr=0.0001, weight_decay=0, betas=[0.9, 0.99])
 
     def on_epoch_start(self):
-        self.net_g.eval()
-        self.net_d.eval()
+        self.net_g.train()
+        self.net_d.train()
         
     def get_current_visuals(self):
         out_dict = OrderedDict()
