@@ -291,9 +291,10 @@ class TrainEpoch(Epoch):
         return l_g_total, mse_metric, mae_metric, psnr, ssim
 
 class ValidEpoch(Epoch):
-    def __init__(self, model, discriminator, loss_weight, device="cpu", verbose=True, gan_type = "standard"):
+    def __init__(self, model, loss, discriminator, loss_weight, device="cpu", verbose=True, gan_type = "standard"):
         super().__init__(
             model=model,
+            loss=loss,
             gan_type=gan_type,
             stage_name="valid",
             device=device,
