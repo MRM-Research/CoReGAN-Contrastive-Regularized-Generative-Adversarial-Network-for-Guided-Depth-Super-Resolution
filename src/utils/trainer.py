@@ -80,14 +80,14 @@ def train(epochs,
         gan_type=gan_type,
         batch_size = batch_size
     )
-    valid_epoch = ValidEpoch(
-        model=model,
-        discriminator=disc, 
-        loss_weight=loss_weight, 
-        device=device,
-        verbose=True,
-        gan_type=gan_type
-    )
+    # valid_epoch = ValidEpoch(
+    #     model=model,
+    #     discriminator=disc, 
+    #     loss_weight=loss_weight, 
+    #     device=device,
+    #     verbose=True,
+    #     gan_type=gan_type
+    # )
 
     min_mse = 0
     min_mae = 0
