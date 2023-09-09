@@ -148,6 +148,7 @@ class Unet(SegmentationModel):
             self.contrastive_head1= nn.Sequential(
                                        nn.AdaptiveAvgPool2d(1),
                                        nn.Flatten(),
+                                       print("out_channels",self.encoder.out_channels[-1]),
                                        nn.Linear(in_features=self.encoder.out_channels[-1], out_features=512),
                                        nn.BatchNorm1d(512),     
                                        nn.ReLU(),
@@ -157,6 +158,7 @@ class Unet(SegmentationModel):
             self.contrastive_head2= nn.Sequential(
                                        nn.AdaptiveAvgPool2d(1),
                                        nn.Flatten(),
+                                       print("out_channels",self.encoder.out_channels[-1]),
                                        nn.Linear(in_features=self.encoder.out_channels[-1], out_features=512),
                                        nn.BatchNorm1d(512),
                                        nn.ReLU(),
