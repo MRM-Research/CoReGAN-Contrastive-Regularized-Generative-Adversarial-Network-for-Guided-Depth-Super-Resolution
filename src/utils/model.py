@@ -67,7 +67,7 @@ class SegmentationModel(torch.nn.Module):
             f1 = features[-1]
             f2 = features1[-1]
             print("features",features)
-            print("fetaure shape", features.shape)
+            print("feature shape", len(features))
             for ind in range(len(features)):
                 # features[ind] = (features[ind]+features1[ind])/2
                 # features[ind] = features1[ind]
@@ -78,6 +78,8 @@ class SegmentationModel(torch.nn.Module):
 
         masks = self.segmentation_head(decoder_output)
 
+        print("f1", f1)
+        print("f2", f2)
         if self.contrastive_head1 is not None:
             f1= self.contrastive_head1(f1)
             f2= self.contrastive_head2(f2)
