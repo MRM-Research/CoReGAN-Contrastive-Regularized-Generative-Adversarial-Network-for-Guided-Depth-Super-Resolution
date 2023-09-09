@@ -324,12 +324,6 @@ class ValidEpoch(Epoch):
 
         self.rgb, self.depth_high_res, self.depth_low_res = rgb, depth_high_res, depth_low_res
         
-        self.net_d_iters = 1
-        self.net_d_init_iters = 0
-
-        for p in self.net_d.parameters():
-            p.requires_grad = False
-        
         # generating output
         self.output, f1, f2 = self.net_g(self.rgb, self.depth_low_res)     
 
