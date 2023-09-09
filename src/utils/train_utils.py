@@ -72,9 +72,8 @@ class AverageValueMeter(Meter):
         self.std = np.nan
 
 class Epoch:
-    def __init__(self, batch_size, gan_type, model, loss, stage_name, device="cpu", verbose=True):
+    def __init__(self, batch_size, gan_type, model, stage_name, device="cpu", verbose=True):
         self.net_g = model
-        self.loss = loss
         self.stage_name = stage_name
         self.verbose = verbose
         self.device = device
@@ -163,11 +162,10 @@ class Epoch:
         return logs
 
 class TrainEpoch(Epoch):
-    def __init__(self, beta, model, loss, discriminator, loss_weight, device="cpu", verbose=True, contrastive=True, gan_type = "standard", batch_size = 8):
+    def __init__(self, beta, model,  discriminator, loss_weight, device="cpu", verbose=True, contrastive=True, gan_type = "standard", batch_size = 8):
         super().__init__(
             batch_size=batch_size,
             model=model,
-            loss=loss,
             gan_type=gan_type,
             stage_name="train",
             device=device,
@@ -291,21 +289,17 @@ class TrainEpoch(Epoch):
         return l_g_total, mse_metric, mae_metric, psnr, ssim
 
 class ValidEpoch(Epoch):
-    def __init__(self, beta, model, loss, discriminator, loss_weight, device="cpu", verbose=True, contrastive=True, gan_type = "standard", batch_size = 8):
+    def __init__(self, model, discriminator, loss_weight, device="cpu", verbose=True, gan_type = "standard"):
         super().__init__(
-            batch_size=batch_size,
             model=model,
-            loss=loss,
             gan_type=gan_type,
             stage_name="valid",
             device=device,
             verbose=verbose,
         )
-        self.contrastive = contrastive
         self.loss_weight = loss_weight
         self.net_g = model
         self.net_d = discriminator
-        self.contrastive = contrastive
         self.schedulers = []
 
     def get_current_visuals(self):
@@ -323,12 +317,6 @@ class ValidEpoch(Epoch):
     def batch_update(self, current_iter, rgb, depth_high_res, depth_low_res):
 
         self.rgb, self.depth_high_res, self.depth_low_res = rgb, depth_high_res, depth_low_res
-        
-        self.net_d_iters = 1
-        self.net_d_init_iters = 0
-
-        for p in self.net_d.parameters():
-            p.requires_grad = False
         
         # generating output
         self.output, f1, f2 = self.net_g(self.rgb, self.depth_low_res)     
