@@ -66,7 +66,6 @@ class SegmentationModel(torch.nn.Module):
             
             f1 = features[-1]
             f2 = features1[-1]
-            print("features",features)
             print("feature shape", len(features))
             for ind in range(len(features)):
                 # features[ind] = (features[ind]+features1[ind])/2
@@ -78,9 +77,8 @@ class SegmentationModel(torch.nn.Module):
 
         masks = self.segmentation_head(decoder_output)
 
-        print("f1", f1)
-        print("f2", f2)
         if self.contrastive_head1 is not None:
+            print("contrastive_head1",self.contrastive_head1)
             f1= self.contrastive_head1(f1)
             f2= self.contrastive_head2(f2)
             return masks, f1,  f2
@@ -113,7 +111,7 @@ class Unet(SegmentationModel):
         in_channels: int = 3,
         classes: int = 1,
         activation: Optional[Union[str, callable]] = None,
-        contrastive: bool = False,
+        contrastive: bool = True,
     ):
         super().__init__()
         self.fusion=fusion
@@ -148,8 +146,9 @@ class Unet(SegmentationModel):
             kernel_size=3,
         )
         print("out_channels",self.encoder.out_channels[-1])
-         
+        print(contrastive)
         if contrastive:
+            print("in contrastive")
             self.contrastive_head1= nn.Sequential(
                                        nn.AdaptiveAvgPool2d([3, 480, 640]),
                                        nn.Flatten(),
