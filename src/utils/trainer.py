@@ -40,8 +40,6 @@ def train(epochs,
 
     disc = Discriminator().to(device)
 
-    #preprocessing_fn = smp.encoders.get_preprocessing_fn(encoder, encoder_weights)
-
     train_dataset = Dataset(
         hr_dir,
         tar_dir,
@@ -67,15 +65,10 @@ def train(epochs,
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=True)#, drop_last=True)
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)\
-        
-    loss = custom_loss(batch_size, beta=beta, loss_weight=loss_weight, gan_type=gan_type)
-    loss_val = custom_loss_val(loss_weight=loss_weight, gan_type=gan_type)
 
-    # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer,250)
     train_epoch = TrainEpoch(
         beta=beta,
         model=model,
-        loss=loss,
         discriminator=disc,
         loss_weight=loss_weight, 
         device=device,
@@ -85,11 +78,12 @@ def train(epochs,
         batch_size = batch_size
     )
     valid_epoch = ValidEpoch(
-        model=model, 
-        loss=loss, 
+        model=model,
+        discriminator=disc, 
+        loss_weight=loss_weight, 
         device=device,
         verbose=True,
-        contrastive=True
+        gan_type=gan_type
     )
 
     min_mse = 0
@@ -133,8 +127,3 @@ def train_model(configs):
          configs['tar_val_dir'], configs['hr_test_dir'],configs['tar_test_dir'], configs['encoder'],
          configs['encoder_weights'], configs['device'], configs['lr'], configs['beta'],
          configs['loss_weight'],  configs['gan_type'])
-    
-# 2. In metrics, change back to 0, 1 from -1, 1 , rest remains the same - dont clamp --> aryan
-# 5. change wand.config.update and init - init mse and mae as big value
-# 6. custom loss v in val epoch
-         

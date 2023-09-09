@@ -21,7 +21,8 @@ def main(args):
         'gan_type': args.gan_type
     }
     wandb.init(project="DepthMapSR", entity="kasliwal17",
-               config={'beta':args.beta, 
+               config={'beta':args.beta,
+                       'epochs':args.epochs, 
                        'lr':args.lr, 
                        'max_ssim':0,
                        'max_psnr':0, 
