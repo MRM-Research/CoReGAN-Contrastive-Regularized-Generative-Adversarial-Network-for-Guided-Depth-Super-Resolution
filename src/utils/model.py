@@ -78,6 +78,7 @@ class SegmentationModel(torch.nn.Module):
         masks = self.segmentation_head(decoder_output)
 
         if self.contrastive_head1 is not None:
+            print("contrastive_head1",self.contrastive_head1)
             f1= self.contrastive_head1(f1)
             f2= self.contrastive_head2(f2)
             return masks, f1,  f2
