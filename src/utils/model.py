@@ -57,6 +57,8 @@ class SegmentationModel(torch.nn.Module):
         """Sequentially pass `x` trough model`s encoder, decoder and heads"""
 
         self.check_input_shape(x)
+        print(x.shape)
+        print(y.shape)
 
         features = self.encoder(x)
         if self.fusion == True:
@@ -64,7 +66,8 @@ class SegmentationModel(torch.nn.Module):
             
             f1 = features[-1]
             f2 = features1[-1]
-            
+            print("features",features)
+            print("fetaure shape", features.shape)
             for ind in range(len(features)):
                 # features[ind] = (features[ind]+features1[ind])/2
                 # features[ind] = features1[ind]
