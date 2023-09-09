@@ -198,15 +198,10 @@ class TrainEpoch(Epoch):
         if hasattr(self, 'depth_high_res'):
             out_dict['depth_high_res'] = self.depth_high_res.detach().to(self.device)
         return out_dict
-        
-    def feed_data(self,x,z,y):
-        self.rgb = x
-        self.depth_high_res = y
-        self.depth_low_res = z 
     
     def batch_update(self, current_iter , x, z, y):
         
-        self.feed_data(x,z,y)
+        self.rgb,self.depth_high_res,self.depth_low_res = x,y,z
        
         # creating a list of optimizers to allow integration of lr_scheduler
         self.optimizers = [self.optimizer_g, self.optimizer_d]
