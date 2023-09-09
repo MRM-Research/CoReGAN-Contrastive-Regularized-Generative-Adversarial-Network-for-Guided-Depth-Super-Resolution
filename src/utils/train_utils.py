@@ -310,7 +310,6 @@ class ValidEpoch(Epoch):
 
     def on_epoch_start(self):
         self.net_g.eval()
-        self.net_d.eval()
 
     def batch_update(self, current_iter, rgb, depth_high_res, depth_low_res):
 
