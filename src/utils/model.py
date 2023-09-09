@@ -142,7 +142,8 @@ class Unet(SegmentationModel):
             activation=activation,
             kernel_size=3,
         )
-
+        print("out_channels",self.encoder.out_channels[-1])
+         
         if contrastive:
             self.contrastive_head1= nn.Sequential(
                                        nn.AdaptiveAvgPool2d(1),
