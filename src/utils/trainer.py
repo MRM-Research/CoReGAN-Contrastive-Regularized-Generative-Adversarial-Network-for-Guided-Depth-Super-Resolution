@@ -7,7 +7,6 @@ from .transformations import get_training_augmentation, get_preprocessing,resize
 from .model import Unet
 from torch.utils.data import DataLoader
 from .model import Discriminator
-import torch
 
 def train(epochs, 
           batch_size, 
@@ -39,6 +38,8 @@ def train(epochs,
     )
 
     disc = Discriminator().to(device)
+
+    preprocessing_fn = smp.encoders.get_preprocessing_fn(encoder, encoder_weights)
 
     train_dataset = Dataset(
         hr_dir,
@@ -72,6 +73,7 @@ def train(epochs,
     train_epoch = TrainEpoch(
         beta=beta,
         model=model,
+        loss=loss,
         discriminator=disc,
         loss_weight=loss_weight, 
         device=device,
@@ -97,6 +99,7 @@ def train(epochs,
         
         print('\nEpoch: {}'.format(i))
         train_logs = train_epoch.run(train_loader)
+        #valid_logs = valid_epoch.run(valid_loader)
         #valid_logs = valid_epoch.run(valid_loader)
         
         print(train_logs)
