@@ -104,16 +104,16 @@ def train(epochs,
         
         print(train_logs)
         wandb.log({'epoch':i+1,
-                    't_loss':train_logs['loss'],
+                    't_loss':train_logs['LOSS'],
                     # 't_gan_loss': train_logs['gan_loss'],
                     # 'v_loss':valid_logs['custom_loss_val'],
-                    't_ssim':train_logs['ssim'],
+                    't_ssim':train_logs['SSIM'],
                     # 'v_ssim':valid_logs['ssim'],
-                    't_psnr':train_logs['psnr'],
+                    't_psnr':train_logs['PSNR'],
                     # 'v_psnr':valid_logs['psnr'],
-                    't_mse':train_logs['mse'],
+                    't_mse':train_logs['MSE'],
                     # 'v_mse':valid_logs['mse'],
-                    't_mae':train_logs['mae'],
+                    't_mae':train_logs['MAE'],
                     # 'v_mae':valid_logs['mae']
                     })
         # do something (save model, change lr, etc.)
