@@ -109,20 +109,20 @@ def train(epochs,
                     # 't_gan_loss': train_logs['gan_loss'],
                     'v_loss':valid_logs['LOSS'],
                     't_ssim':train_logs['SSIM'],
-                    'v_ssim':valid_logs['ssim'],
+                    'v_ssim':valid_logs['SSIM'],
                     't_psnr':train_logs['PSNR'],
-                    'v_psnr':valid_logs['psnr'],
+                    'v_psnr':valid_logs['PSNR'],
                     't_mse':train_logs['MSE'],
                     'v_mse':valid_logs['MSE'],
                     't_mae':train_logs['MAE'],
                     'v_mae':valid_logs['MAE']
                     })
         #do something (save model, change lr, etc.)
-        if min_mse >= valid_logs['mse']:
-            min_mse = valid_logs['mse']
-            min_mae = valid_logs['mae']
-            max_psnr = valid_logs['psnr']
-            max_ssim = valid_logs['ssim']
+        if min_mse >= valid_logs['MSE']:
+            min_mse = valid_logs['MSE']
+            min_mae = valid_logs['MAE']
+            max_psnr = valid_logs['PSNR']
+            max_ssim = valid_logs['SSIM']
             wandb.config.update({'min_mae':min_mae,'min_mse':min_mse, 'max_ssim':max_ssim, 'max_psnr':max_psnr}, allow_val_change=True)
             torch.save(model.state_dict(), './best_model.pth')
             print('Model saved!')
