@@ -235,14 +235,12 @@ class TrainEpoch(Epoch):
             l_g_pix = self.MLoss(self.output, self.depth_high_res).to(self.device)
             l_g_total += l_g_pix
             loss_dict['l_g_pix'] = l_g_pix
-            print("l_g_pix", type(l_g_pix))
 
             # gan loss
             fake_g_pred = self.net_d(self.output)
             l_g_gan = self.GLoss(fake_g_pred, True, is_disc=False).to(self.device)
             l_g_total += l_g_gan
             loss_dict['l_g_gan'] = l_g_gan
-            print("l_g_gan", type(l_g_gan))
 
             # contrastive loss
             l_g_total + (self.beta)*self.CLoss(f1, f2).to(self.device)
@@ -273,8 +271,6 @@ class TrainEpoch(Epoch):
         loss_dict['l_d_fake'] = l_d_fake
         loss_dict['out_d_fake'] = torch.mean(fake_d_pred.detach())
         
-        print("l_d_fake", type(l_d_fake))
-        print("l_d_real", type(l_d_real))
 
         # gradient penalty for discriminator
         self.gp_weight = 100
@@ -294,6 +290,7 @@ class TrainEpoch(Epoch):
             del self.depth_high_res
       
         mse_metric, mae_metric, psnr ,ssim = self.calculate_metrics(result_img, DHR_img)  
+        print("l_g_total",type(l_g_total))
 
         return l_g_total, mse_metric, mae_metric, psnr, ssim
 
