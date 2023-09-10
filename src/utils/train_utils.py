@@ -228,7 +228,7 @@ class TrainEpoch(Epoch):
         self.output, f1, f2 = self.net_g(self.rgb, self.depth_low_res)     
 
         # initiliazing l_g_total to 0
-        l_g_total = 0
+        l_g_total = torch.tensor(0)
         loss_dict = OrderedDict()           
 
         if (current_iter % self.net_d_iters == 0 and current_iter > self.net_d_init_iters):
