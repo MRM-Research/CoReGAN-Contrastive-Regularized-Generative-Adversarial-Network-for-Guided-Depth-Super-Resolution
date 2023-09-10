@@ -117,7 +117,7 @@ def train(epochs,
                     'v_mae':valid_logs['MAE']
                     })
         #do something (save model, change lr, etc.)
-        if min_mse >= valid_logs['MSE']:
+        if min_mse <= valid_logs['MSE']:
             min_mse = valid_logs['MSE']
             min_mae = valid_logs['MAE']
             max_psnr = valid_logs['PSNR']
