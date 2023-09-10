@@ -38,12 +38,12 @@ def main(args):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--hr_dir', type=str, required=False, default='/kaggle/input/nyuv2-labled-dataset/images')
-    parser.add_argument('--tar_dir', type=str, required=False, default='/kaggle/input/nyuv2-labled-dataset/depths')
-    parser.add_argument('--hr_val_dir', type=str, required=False, default='')
-    parser.add_argument('--tar_val_dir', type=str, required=False, default='')
-    parser.add_argument('--hr_test_dir', type=str, required=False, default='')
-    parser.add_argument('--tar_test_dir', type=str, required=False, default='')
+    parser.add_argument('--hr_dir', type=str, required=False, default='/content/drive/MyDrive/nyuv2-dataset/train/images/')
+    parser.add_argument('--tar_dir', type=str, required=False, default='/content/drive/MyDrive/nyuv2-dataset/train/depths/')
+    parser.add_argument('--hr_val_dir', type=str, required=False, default='/content/drive/MyDrive/nyuv2-dataset/val/images/')
+    parser.add_argument('--tar_val_dir', type=str, required=False, default='/content/drive/MyDrive/nyuv2-dataset/val/depths/')
+    parser.add_argument('--hr_test_dir', type=str, required=False, default='/content/drive/MyDrive/nyuv2-dataset/test/images/')
+    parser.add_argument('--tar_test_dir', type=str, required=False, default='/content/drive/MyDrive/nyuv2-dataset/test/depths/')
     parser.add_argument('--batch_size', type=int, required=False, default=8)
     parser.add_argument('--epochs', type=int, required=False, default=250)
     parser.add_argument('--device', type=str, required=False, default='cuda')

@@ -147,7 +147,6 @@ class Epoch:
                 # loss_logs = {loss.__name__: loss_meter.mean}
                 # logs.update(loss_logs)
                 
-                print("type of loss", type(loss))
                 loss = loss.cpu().detach().numpy()
 
                 # update metrics logs
@@ -171,7 +170,6 @@ class TrainEpoch(Epoch):
         super().__init__(
             batch_size=batch_size,
             model=model,
-            # loss=loss,
             gan_type=gan_type,
             stage_name="train",
             device=device,
@@ -297,14 +295,14 @@ class TrainEpoch(Epoch):
         return l_g_total, mse_metric, mae_metric, psnr, ssim
 
 class ValidEpoch(Epoch):
-    def __init__(self, model, discriminator, loss_weight, device="cpu", verbose=True, gan_type = "standard"):
+    def __init__(self, model, discriminator, loss_weight, device="cpu", verbose=True, gan_type = "standard", batch_size = 8):
         super().__init__(
-            model=model,
-            # loss=loss,
-            gan_type=gan_type,
-            stage_name="valid",
-            device=device,
-            verbose=verbose,
+            batch_size = batch_size,
+            model= model,
+            gan_type= gan_type,
+            stage_name= "valid",
+            device= device,
+            verbose= verbose,
         )
         self.loss_weight = loss_weight
         self.net_g = model
@@ -331,7 +329,7 @@ class ValidEpoch(Epoch):
         self.output, f1, f2 = self.net_g(self.rgb, self.depth_low_res)     
 
         # initiliazing l_g_total to 0
-        l_g_total = 0
+        l_g_total = torch.tensor(0.0).to(self.device)
         loss_dict = OrderedDict()
 
         if (current_iter % self.net_d_iters == 0 and current_iter > self.net_d_init_iters):

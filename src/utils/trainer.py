@@ -7,6 +7,7 @@ from .transformations import get_training_augmentation, get_preprocessing,resize
 from .model import Unet
 from torch.utils.data import DataLoader
 from .model import Discriminator
+import torch
 
 def train(epochs, 
           batch_size, 
@@ -48,23 +49,23 @@ def train(epochs,
         preprocessing= True,
         resize = resize()
     )
-    # valid_dataset = Dataset(
-    #     hr_val_dir,
-    #     tar_val_dir,
-    #     augmentation=None, 
-    #     preprocessing=True,
-    #     resize = resize()
-    # )
-    # test_dataset = Dataset(
-    #     hr_test_dir,
-    #     tar_test_dir,
-    #     augmentation=None, 
-    #     preprocessing=True,
-    #     resize = resize()
-    # )
+    valid_dataset = Dataset(
+        hr_val_dir,
+        tar_val_dir,
+        augmentation=None, 
+        preprocessing=True,
+        resize = resize()
+    )
+    test_dataset = Dataset(
+        hr_test_dir,
+        tar_test_dir,
+        augmentation=None, 
+        preprocessing=True,
+        resize = resize()
+    )
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, drop_last=True)
-    #valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=True)#, drop_last=True)
-    #test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)\
+    valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=True, drop_last=True)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True, drop_last=True)
         
     # loss = custom_loss(batch_size, beta=beta, loss_weight=loss_weight, gan_type=gan_type)
     # loss_val = custom_loss_val(loss_weight=loss_weight, gan_type=gan_type)
@@ -82,14 +83,15 @@ def train(epochs,
         gan_type=gan_type,
         batch_size = batch_size
     )
-    # valid_epoch = ValidEpoch(
-    #     model=model,
-    #     discriminator=disc, 
-    #     loss_weight=loss_weight, 
-    #     device=device,
-    #     verbose=True,
-    #     gan_type=gan_type
-    # )
+    valid_epoch = ValidEpoch(
+        model=model,
+        discriminator=disc, 
+        loss_weight=loss_weight, 
+        device=device,
+        verbose=True,
+        gan_type=gan_type,
+        batch_size = batch_size
+    )
 
     min_mse = 0
     min_mae = 0
@@ -99,33 +101,32 @@ def train(epochs,
         
         print('\nEpoch: {}'.format(i))
         train_logs = train_epoch.run(train_loader)
-        #valid_logs = valid_epoch.run(valid_loader)
-        #valid_logs = valid_epoch.run(valid_loader)
+        valid_logs = valid_epoch.run(valid_loader)
         
         print(train_logs)
         wandb.log({'epoch':i+1,
                     't_loss':train_logs['LOSS'],
                     # 't_gan_loss': train_logs['gan_loss'],
-                    # 'v_loss':valid_logs['custom_loss_val'],
+                    'v_loss':valid_logs['LOSS'],
                     't_ssim':train_logs['SSIM'],
-                    # 'v_ssim':valid_logs['ssim'],
+                    'v_ssim':valid_logs['ssim'],
                     't_psnr':train_logs['PSNR'],
-                    # 'v_psnr':valid_logs['psnr'],
+                    'v_psnr':valid_logs['psnr'],
                     't_mse':train_logs['MSE'],
-                    # 'v_mse':valid_logs['mse'],
+                    'v_mse':valid_logs['MSE'],
                     't_mae':train_logs['MAE'],
-                    # 'v_mae':valid_logs['mae']
+                    'v_mae':valid_logs['MAE']
                     })
-        # do something (save model, change lr, etc.)
-        # if min_mse >= valid_logs['mse']:
-        #     min_mse = valid_logs['mse']
-        #     min_mae = valid_logs['mae']
-        #     max_psnr = valid_logs['psnr']
-        #     max_ssim = valid_logs['ssim']
-        #     wandb.config.update({'min_mae':min_mae,'min_mse':min_mse, 'max_ssim':max_ssim, 'max_psnr':max_psnr}, allow_val_change=True)
-        #     torch.save(model.state_dict(), './best_model.pth')
-        #     print('Model saved!')
-    # print(f'max ssim: {max_ssim} max psnr: {max_psnr} min mse: {min_mse} min mae: {min_mae}')
+        #do something (save model, change lr, etc.)
+        if min_mse >= valid_logs['mse']:
+            min_mse = valid_logs['mse']
+            min_mae = valid_logs['mae']
+            max_psnr = valid_logs['psnr']
+            max_ssim = valid_logs['ssim']
+            wandb.config.update({'min_mae':min_mae,'min_mse':min_mse, 'max_ssim':max_ssim, 'max_psnr':max_psnr}, allow_val_change=True)
+            torch.save(model.state_dict(), './best_model.pth')
+            print('Model saved!')
+    print(f'max ssim: {max_ssim} max psnr: {max_psnr} min mse: {min_mse} min mae: {min_mae}')
 
 def train_model(configs):
     train(configs['epochs'], configs['batch_size'], configs['hr_dir'],
