@@ -332,6 +332,9 @@ class ValidEpoch(Epoch):
         l_g_total = torch.tensor(0.0).to(self.device)
         loss_dict = OrderedDict()
 
+        self.net_d_iters = 1
+        self.net_d_init_iters = 0
+
         if (current_iter % self.net_d_iters == 0 and current_iter > self.net_d_init_iters):
             
             # pixel loss
