@@ -72,17 +72,17 @@ class AverageValueMeter(Meter):
         self.std = np.nan
 
 class Epoch:
-    def __init__(self, batch_size, gan_type, model, stage_name, device="cpu", verbose=True):
+    def __init__(self, batch_size, loss_weight, gan_type, model, stage_name, device="cpu", verbose=True):
         self.net_g = model
-        # self.loss = loss
         self.stage_name = stage_name
         self.verbose = verbose
         self.device = device
         self.gan_type = gan_type
         self.batch_size = batch_size
+        self.loss_weight = loss_weight
         
         self.GLoss = GANLoss(gan_type=self.gan_type, real_label_val=1.0, fake_label_val=0.0, loss_weight=1)
-        self.MLoss = MSELoss(loss_weight=1, reduction='mean')
+        self.MLoss = MSELoss(loss_weight=self.loss_weight, reduction='mean')
         self.CLoss = ContrastiveLoss(self.batch_size, temperature=0.5)
         self.mse = MeanSquaredError().to(self.device)
         self.mae = MeanAbsoluteError().to(self.device)
@@ -174,9 +174,9 @@ class TrainEpoch(Epoch):
             stage_name="train",
             device=device,
             verbose=verbose,
+            loss_weight=loss_weight,
         )
         self.beta = beta
-        self.loss_weight = loss_weight
         self.net_g = model
         self.net_d = discriminator
         self.contrastive = contrastive
@@ -303,8 +303,8 @@ class ValidEpoch(Epoch):
             stage_name= "valid",
             device= device,
             verbose= verbose,
+            loss_weight = loss_weight
         )
-        self.loss_weight = loss_weight
         self.net_g = model
         self.net_d = discriminator
         self.schedulers = []

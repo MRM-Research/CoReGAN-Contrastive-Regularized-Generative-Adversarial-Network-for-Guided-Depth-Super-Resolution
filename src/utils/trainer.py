@@ -74,14 +74,13 @@ def train(epochs,
     train_epoch = TrainEpoch(
         beta=beta,
         model=model,
-        # loss=loss,
         discriminator=disc,
         loss_weight=loss_weight, 
         device=device,
         verbose=True,
         contrastive=True,
         gan_type=gan_type,
-        batch_size = batch_size
+        batch_size=batch_size
     )
     valid_epoch = ValidEpoch(
         model=model,
@@ -90,7 +89,7 @@ def train(epochs,
         device=device,
         verbose=True,
         gan_type=gan_type,
-        batch_size = batch_size
+        batch_size=batch_size
     )
 
     min_mse = 0
