@@ -146,8 +146,7 @@ class Epoch:
                 # loss_meter.add(loss_value)
                 # loss_logs = {loss.__name__: loss_meter.mean}
                 # logs.update(loss_logs)
-                print("loss",type(loss))
-                loss = torch.tensor(loss).cpu().detach().numpy()
+                loss = loss.cpu().detach().numpy()
 
                 # update metrics logs
                 metrics_meters["MSE"].add(mse.cpu().detach().numpy())
