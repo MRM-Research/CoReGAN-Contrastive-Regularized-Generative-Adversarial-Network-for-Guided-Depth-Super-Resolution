@@ -128,7 +128,7 @@ class Epoch:
 
         logs = {}
         loss_meter = AverageValueMeter()
-        metrics_meters = {"MSE": AverageValueMeter(), "MAE": AverageValueMeter(), "PSNR": AverageValueMeter(), "SSIM": AverageValueMeter()}
+        metrics_meters = {"MSE": AverageValueMeter(), "MAE": AverageValueMeter(), "PSNR": AverageValueMeter(), "SSIM": AverageValueMeter(), "LOSS": AverageValueMeter() }
         iter = 0
         with tqdm(
             dataloader,
@@ -142,16 +142,17 @@ class Epoch:
                 loss, mse, mae , psnr, ssim = self.batch_update(iter, rgb, depth_low_res, depth_high_res)
 
                 # update loss logs
-                loss_value = torch.tensor(loss).cpu().detach().numpy()
-                loss_meter.add(loss_value)
-                loss_logs = {loss.__name__: loss_meter.mean}
-                logs.update(loss_logs)
+                # loss_value = torch.tensor(loss).cpu().detach().numpy()
+                # loss_meter.add(loss_value)
+                # loss_logs = {loss.__name__: loss_meter.mean}
+                # logs.update(loss_logs)
 
                 # update metrics logs
                 metrics_meters["MSE"].add(mse.cpu().detach().numpy())
                 metrics_meters["MAE"].add(mae.cpu().detach().numpy())
                 metrics_meters["PSNR"].add(psnr.cpu().detach().numpy())
                 metrics_meters["SSIM"].add(ssim.cpu().detach().numpy())
+                metrics_meters["LOSS"].add(loss.cpu().detach().numpy())
 
                 metrics_logs = {k: v.mean for k, v in metrics_meters.items()}
                 logs.update(metrics_logs)
