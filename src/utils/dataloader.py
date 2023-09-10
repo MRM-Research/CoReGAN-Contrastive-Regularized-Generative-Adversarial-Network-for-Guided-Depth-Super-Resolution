@@ -69,18 +69,18 @@ class Dataset():
         
     #     return rgb_image,depth_low_res_image, target_image
 
-    # def load_img(self,directory):
-    #     img_list = []
-    #     files = os.listdir(directory)
-    #     for file in files:
-    #         if file.endswith(".npy"):
-    #             img_list.append(os.path.join(directory, file))
+    def load_img(self,directory):
+        img_list = []
+        files = os.listdir(directory)
+        for file in files:
+            if file.endswith(".npy"):
+                img_list.append(os.path.join(directory, file))
                 
-    #     sorted_img_list = sorted(img_list, key=self.extract_number)
-    #     return sorted_img_list
+        sorted_img_list = sorted(img_list, key=self.extract_number)
+        return sorted_img_list
     
-    # def __len__(self):
-    #     return len(self.rgb_list)
+    def __len__(self):
+        return len(self.rgb_list)
 
     def __getitem__(self, i):
     
