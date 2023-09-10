@@ -146,6 +146,7 @@ class Epoch:
                 # loss_meter.add(loss_value)
                 # loss_logs = {loss.__name__: loss_meter.mean}
                 # logs.update(loss_logs)
+                print("type of loss", type(loss))
                 loss = loss.cpu().detach().numpy()
 
                 # update metrics logs
