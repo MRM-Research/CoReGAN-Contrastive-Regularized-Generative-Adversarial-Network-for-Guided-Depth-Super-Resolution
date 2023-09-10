@@ -39,7 +39,7 @@ def train(epochs,
 
     disc = Discriminator().to(device)
 
-    preprocessing_fn = smp.encoders.get_preprocessing_fn(encoder, encoder_weights)
+    # preprocessing_fn = smp.encoders.get_preprocessing_fn(encoder, encoder_weights)
 
     train_dataset = Dataset(
         hr_dir,
@@ -66,8 +66,8 @@ def train(epochs,
     #valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=True)#, drop_last=True)
     #test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)\
         
-    loss = custom_loss(batch_size, beta=beta, loss_weight=loss_weight, gan_type=gan_type)
-    loss_val = custom_loss_val(loss_weight=loss_weight, gan_type=gan_type)
+    # loss = custom_loss(batch_size, beta=beta, loss_weight=loss_weight, gan_type=gan_type)
+    # loss_val = custom_loss_val(loss_weight=loss_weight, gan_type=gan_type)
 
     # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer,250)
     train_epoch = TrainEpoch(
@@ -104,8 +104,8 @@ def train(epochs,
         
         print(train_logs)
         wandb.log({'epoch':i+1,
-                    't_loss':train_logs['custom_loss'],
-                    't_gan_loss': train_logs['gan_loss'],
+                    't_loss':train_logs['loss'],
+                    # 't_gan_loss': train_logs['gan_loss'],
                     # 'v_loss':valid_logs['custom_loss_val'],
                     't_ssim':train_logs['ssim'],
                     # 'v_ssim':valid_logs['ssim'],
