@@ -128,7 +128,7 @@ class Epoch:
 
         logs = {}
         loss_meter = AverageValueMeter()
-        metrics_meters = {"MSE": AverageValueMeter(), "MAE": AverageValueMeter(), "PSNR": AverageValueMeter(), "SSIM": AverageValueMeter(), "LOSS": AverageValueMeter() }
+        metrics_meters = {"MSE": AverageValueMeter(), "MAE": AverageValueMeter(), "PSNR": AverageValueMeter(), "SSIM": AverageValueMeter(), "LOSS": AverageValueMeter()}
         iter = 0
         with tqdm(
             dataloader,
@@ -152,7 +152,7 @@ class Epoch:
                 metrics_meters["MAE"].add(mae.cpu().detach().numpy())
                 metrics_meters["PSNR"].add(psnr.cpu().detach().numpy())
                 metrics_meters["SSIM"].add(ssim.cpu().detach().numpy())
-                metrics_meters["LOSS"].add(loss.cpu().detach().numpy())
+                metrics_meters["LOSS"].add(loss)
 
                 metrics_logs = {k: v.mean for k, v in metrics_meters.items()}
                 logs.update(metrics_logs)
