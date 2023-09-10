@@ -146,6 +146,7 @@ class Epoch:
                 # loss_meter.add(loss_value)
                 # loss_logs = {loss.__name__: loss_meter.mean}
                 # logs.update(loss_logs)
+                
                 print("type of loss", type(loss))
                 loss = loss.cpu().detach().numpy()
 
@@ -290,7 +291,8 @@ class TrainEpoch(Epoch):
             DHR_img = visuals['depth_high_res']
             del self.depth_high_res
       
-        mse_metric, mae_metric, psnr ,ssim = self.calculate_metrics(result_img, DHR_img)  
+        mse_metric, mae_metric, psnr ,ssim = self.calculate_metrics(result_img, DHR_img) 
+        print("type of l_g_total", type(l_g_total)) 
 
         return l_g_total, mse_metric, mae_metric, psnr, ssim
 
