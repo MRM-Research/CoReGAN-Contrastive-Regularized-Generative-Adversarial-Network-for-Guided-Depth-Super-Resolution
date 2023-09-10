@@ -44,8 +44,8 @@ class Dataset():
             
             augmented = self.augmentation(image=rgb_image, target=target_image)
             rgb_image,target_image = augmented['image'],augmented['target']
-            
-            if self.resize:
+        
+        if self.resize:
                 transform = self.resize(image = target_image)
                 depth_low_res_image = transform['image']
                 depth_low_res_image = np.array(depth_low_res_image) 
