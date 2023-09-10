@@ -146,6 +146,7 @@ class Epoch:
                 # loss_meter.add(loss_value)
                 # loss_logs = {loss.__name__: loss_meter.mean}
                 # logs.update(loss_logs)
+                print("loss",type(loss))
                 loss = torch.tensor(loss).cpu().detach().numpy()
 
                 # update metrics logs
@@ -290,7 +291,6 @@ class TrainEpoch(Epoch):
             del self.depth_high_res
       
         mse_metric, mae_metric, psnr ,ssim = self.calculate_metrics(result_img, DHR_img)  
-        print("l_g_total",type(l_g_total))
 
         return l_g_total, mse_metric, mae_metric, psnr, ssim
 
