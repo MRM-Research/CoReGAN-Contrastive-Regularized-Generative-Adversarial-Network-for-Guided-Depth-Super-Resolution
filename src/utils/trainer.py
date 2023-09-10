@@ -73,7 +73,7 @@ def train(epochs,
     train_epoch = TrainEpoch(
         beta=beta,
         model=model,
-        loss=loss,
+        # loss=loss,
         discriminator=disc,
         loss_weight=loss_weight, 
         device=device,
