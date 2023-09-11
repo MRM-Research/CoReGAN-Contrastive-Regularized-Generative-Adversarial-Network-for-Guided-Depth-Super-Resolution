@@ -1,4 +1,5 @@
 import albumentations as albu
+import cv2
 
 def get_training_augmentation():
     train_transform = [
@@ -39,8 +40,8 @@ def get_training_augmentation():
 
 def resize():
     return albu.Compose([
-        albu.HorizontalFlip(p=0.5),
-        albu.VerticalFlip(p=0.5),
+        albu.Resize(120,160, p = 1,interpolation = cv2.INTER_CUBIC),
+        albu.Resize(480,640,p=1,interpolation = cv2.INTER_CUBIC)
         # Add more augmentations as needed
     ])
 
