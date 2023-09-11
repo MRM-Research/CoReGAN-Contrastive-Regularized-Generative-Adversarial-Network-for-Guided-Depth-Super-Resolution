@@ -118,5 +118,5 @@ class Dataset():
         rgb_image = torch.from_numpy(rgb_image)
         target_image = torch.from_numpy(target_image)
         
-        return rgb_image,depth_low_res_image, target_image
+        return rgb_image,depth_low_res_image, tan_fi(target_image)
 
