@@ -96,11 +96,10 @@ class Epoch:
         self.MLoss.to(self.device)
         self.CLoss.to(self.device)
         
-    def calculate_metrics(self, img1, img2):
+    def calculate_metrics(self, img1, img2, global_min, global_max):
     # revert both images to 0, 1 from -1, 1
         img1 = un_tan_fi(img1)
         img2 = un_tan_fi(img2)
-    
         # img1 = img1*255
         # img1 = img1.round().int()
         img1 = img1.float()
@@ -108,6 +107,9 @@ class Epoch:
         # img2 = img2*255
         # img2 = img2.round().int()
         img2 = img2.float()
+        
+        img1 = (img1 + 1)*(global_max - global_min)/(2*global_min)
+        img2 = (img2 + 1)*(global_max - global_min)/(2*global_min)
 
         return self.mse(img1,img2).to(self.device), self.mae(img1,img2).to(self.device), self.P(img1,img2).to(self.device), self.Z(img1,img2).to(self.device)
 
