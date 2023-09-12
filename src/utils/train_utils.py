@@ -366,6 +366,6 @@ class ValidEpoch(Epoch):
             DHR_img = visuals['depth_high_res']
             del self.depth_high_res
       
-        mse_metric, mae_metric, psnr, ssim = self.calculate_metrics(result_img, DHR_img)  
+        mse_metric, mae_metric, psnr, ssim = self.calculate_metrics(result_img, DHR_img,0.7132995,9.9954)  
 
         return l_g_total, mse_metric, mae_metric, psnr, ssim
