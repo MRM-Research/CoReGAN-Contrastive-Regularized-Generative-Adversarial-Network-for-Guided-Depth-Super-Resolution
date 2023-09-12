@@ -291,7 +291,7 @@ class TrainEpoch(Epoch):
             DHR_img = visuals['depth_high_res']
             del self.depth_high_res
       
-        mse_metric, mae_metric, psnr ,ssim = self.calculate_metrics(result_img, DHR_img) 
+        mse_metric, mae_metric, psnr ,ssim = self.calculate_metrics(result_img, DHR_img,0.7132995,9.99547) 
         print("type of l_g_total", type(l_g_total)) 
 
         return l_g_total, mse_metric, mae_metric, psnr, ssim
