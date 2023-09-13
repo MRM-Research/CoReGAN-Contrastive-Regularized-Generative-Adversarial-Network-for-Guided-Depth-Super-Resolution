@@ -92,8 +92,8 @@ def train(epochs,
         batch_size=batch_size
     )
 
-    min_mse = 0
-    min_mae = 0
+    min_mse = 1e4
+    min_mae = 1e4
     max_ssim = 0
     max_psnr = 0
     for i in range(0, epochs):
@@ -117,13 +117,9 @@ def train(epochs,
                     'v_mae':valid_logs['MAE']
                     })
         #do something (save model, change lr, etc.)
-        if min_mse >= valid_logs['MSE']:
+        if valid_logs['MSE'] <= min_mse:
             min_mse = valid_logs['MSE']
             min_mae = valid_logs['MAE']
-            # wandb.config.update({'min_mae':min_mae,'min_mse':min_mse, 'max_ssim':max_ssim, 'max_psnr':max_psnr}, allow_val_change=True)
-            # torch.save(model.state_dict(), './best_model.pth')
-            # print('Model saved!')
-        # if max_psnr >= valid_logs['PSNR']:
             max_psnr = valid_logs['PSNR']
             max_ssim = valid_logs['SSIM']
             wandb.config.update({'min_mae':min_mae,'min_mse':min_mse, 'max_ssim':max_ssim, 'max_psnr':max_psnr}, allow_val_change=True)
