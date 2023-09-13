@@ -101,8 +101,8 @@ class Epoch:
         img1 = img1.float()
         img2 = img2.float()
         
-        img1 = (img1 + 1)*(global_max - global_min)/2 + global_min
-        img2 = (img2 + 1)*(global_max - global_min)/2 + global_min
+        img1 = 100*((img1 + 1)*(global_max - global_min)/2 + global_min)
+        img2 = 100*((img2 + 1)*(global_max - global_min)/2 + global_min)
 
         return self.mse(img1,img2).to(self.device), self.mae(img1,img2).to(self.device), self.P(img1,img2).to(self.device), self.Z(img1,img2).to(self.device)
 
