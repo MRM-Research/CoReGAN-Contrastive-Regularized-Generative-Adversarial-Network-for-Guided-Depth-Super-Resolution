@@ -122,7 +122,6 @@ class Epoch:
         self.on_epoch_start()
 
         logs = {}
-        loss_meter = AverageValueMeter()
         metrics_meters = {"MSE": AverageValueMeter(), "MAE": AverageValueMeter(), "PSNR": AverageValueMeter(), "SSIM": AverageValueMeter(), "LOSS": AverageValueMeter()}
         iter = 0
         with tqdm(
@@ -135,13 +134,8 @@ class Epoch:
                 rgb,depth_low_res,depth_high_res = batch_data   
                 rgb,depth_low_res,depth_high_res = rgb.to(self.device), depth_low_res.to(self.device), depth_high_res.to(self.device)
                 loss, mse, mae , psnr, ssim = self.batch_update(iter, rgb, depth_low_res, depth_high_res)
-
-                # update loss logs
-                # loss_value = torch.tensor(loss).cpu().detach().numpy()
-                # loss_meter.add(loss_value)
-                # loss_logs = {loss.__name__: loss_meter.mean}
-                # logs.update(loss_logs)
                 
+                # detaching so loss can be added to metrics_meters
                 loss = loss.cpu().detach().numpy()
 
                 # update metrics logs
@@ -321,7 +315,7 @@ class ValidEpoch(Epoch):
         self.rgb, self.depth_high_res, self.depth_low_res = rgb, depth_high_res, depth_low_res
         
         # generating output
-        self.output, f1, f2 = self.net_g(self.rgb, self.depth_low_res)     
+        self.output, _, _ = self.net_g(self.rgb, self.depth_low_res)     
 
         # initiliazing l_g_total to 0
         l_g_total = torch.tensor(0.0).to(self.device)
