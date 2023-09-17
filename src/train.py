@@ -52,6 +52,6 @@ if __name__ == '__main__':
     parser.add_argument('--lr', type=float, required=False, default=1e-4)
     parser.add_argument('--beta', type=float, required=False, default=1)
     parser.add_argument('--loss_weight', type=float, required=False, default=0.5)
-    parser.add_argument('--gan_type', type=str, required=False, default='standard')
+    parser.add_argument('--gan_type', type=str, required=False, default='lsgan')
     arguments = parser.parse_args()
     main(arguments)
