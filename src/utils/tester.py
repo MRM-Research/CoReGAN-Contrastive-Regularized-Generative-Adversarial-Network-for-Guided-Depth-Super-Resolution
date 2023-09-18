@@ -79,7 +79,7 @@ def test(hr_test_dir,
     print(f'max test ssim: {max_test_ssim} max test psnr: {max_test_psnr} min test mse: {min_test_mse} min test mae: {min_test_mae}')
 
 def test_model(configs):
-    test(configs['batch_size'], configs['hr_test_dir'],
-         configs['tar_test_dir'], configs['encoder'],
+    test(configs['hr_test_dir'],
+         configs['tar_test_dir'],configs['batch_size'], configs['encoder'],
          configs['encoder_weights'], configs['device'],
          configs['loss_weight'],  configs['gan_type'], configs['model_path'])

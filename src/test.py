@@ -1,5 +1,5 @@
 import argparse
-from utils.tester import test
+from utils.tester import test_model
 
 def main(args):
     configs = {
@@ -15,7 +15,7 @@ def main(args):
         
     }
     print(configs)
-    test(configs)
+    test_model(configs)
 
 if __name__ == '__main__':
 
