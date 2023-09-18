@@ -2,7 +2,7 @@ import argparse
 from utils.tester import test
 
 def main(args):
-    config = {
+    configs = {
         'hr_test_dir': args.hr_test_dir,
         'tar_test_dir': args.tar_test_dir,
         'batch_size': args.batch_size,
@@ -14,8 +14,8 @@ def main(args):
         'gan_type': args.gan_type,
         
     }
-    print(config)
-    test(config)
+    print(configs)
+    test(configs)
 
 if __name__ == '__main__':
 
