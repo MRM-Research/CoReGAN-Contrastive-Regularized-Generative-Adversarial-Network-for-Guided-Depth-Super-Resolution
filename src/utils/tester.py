@@ -14,8 +14,8 @@ def test(hr_test_dir,
         encoder_weights='imagenet', 
         device='cuda',
         loss_weight=0.5,
+        gan_type='standard',
         model_path='./best_model.pth',
-        gan_type='standard'
         ):
 
     activation = 'tanh' 
@@ -81,5 +81,5 @@ def test(hr_test_dir,
 def test_model(configs):
     test(configs['batch_size'], configs['hr_test_dir'],
          configs['tar_test_dir'], configs['encoder'],
-         configs['encoder_weights'], configs['device'], configs['lr'],
-         configs['loss_weight'],  configs['gan_type'])
+         configs['encoder_weights'], configs['device'],
+         configs['loss_weight'],  configs['gan_type'], configs['model_path'])
