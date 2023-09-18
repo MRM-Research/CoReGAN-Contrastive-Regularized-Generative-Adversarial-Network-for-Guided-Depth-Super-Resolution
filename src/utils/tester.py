@@ -52,7 +52,7 @@ def test(hr_test_dir,
     )
 
     model = model.load_state_dict(torch.load(model_path))
-    model.to(device)
+    model.torch(device)
     model.eval()
 
     min_test_mse = 1e4
@@ -74,8 +74,6 @@ def test(hr_test_dir,
                     })
         #do something (save model, change lr, etc.)
         wandb.config.update({'min_test_mae':min_test_mae,'min_test_mse':min_test_mse, 'max_test_ssim':max_test_ssim, 'max_test_psnr':max_test_psnr}, allow_val_change=True)
-        torch.save(model.state_dict(), './best_test_model.pth')
-        print('Test model saved!')
     print(f'max test ssim: {max_test_ssim} max test psnr: {max_test_psnr} min test mse: {min_test_mse} min test mae: {min_test_mae}')
 
 def test_model(configs):
