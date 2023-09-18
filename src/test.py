@@ -6,7 +6,7 @@ def main(args):
         'hr_test_dir': args.hr_test_dir,
         'tar_test_dir': args.tar_test_dir,
         'batch_size': args.batch_size,
-        'device':args.device,
+        'device': args.device,
         'model_path': args.model_path,
         'loss_weight': args.loss_weight,
         'encoder': args.encoder,
@@ -14,6 +14,7 @@ def main(args):
         'gan_type': args.gan_type,
         
     }
+    print(config)
     test(config)
 
 if __name__ == '__main__':
@@ -21,7 +22,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--hr_test_dir', type=str, required=False, default='/content/drive/MyDrive/nyuv2-dataset/test/images')
     parser.add_argument('--tar_test_dir', type=str, required=False, default='/content/drive/MyDrive/nyuv2-dataset/test/depths')
-    parser.add_argument('--batch_size', type=int, required=False, default=1)
+    parser.add_argument('--batch_size', type=int, required=False, default=8)
     parser.add_argument('--device', type=str, required=False, default='cuda')
     parser.add_argument('--loss_weight', type=float, required=False, default=0.5)
     parser.add_argument('--gan_type', type=str, required=False, default='lsgan')
