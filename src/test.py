@@ -3,7 +3,7 @@ from utils.tester import test
 
 def main(args):
     config = {
-        'hr_test_dir': args.hr_test__dir,
+        'hr_test_dir': args.hr_test_dir,
         'tar_test_dir': args.tar_test_dir,
         'batch_size': args.batch_size,
         'device':args.device,
