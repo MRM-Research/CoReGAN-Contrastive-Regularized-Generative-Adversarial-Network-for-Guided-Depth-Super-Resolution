@@ -6,13 +6,12 @@ def main(args):
         'hr_test_dir': args.hr_test_dir,
         'tar_test_dir': args.tar_test_dir,
         'batch_size': args.batch_size,
-        'device': args.device,
-        'model_path': args.model_path,
-        'loss_weight': args.loss_weight,
         'encoder': args.encoder,
         'encoder_weights': args.encoder_weights,
+        'device': args.device,
+        'loss_weight': args.loss_weight,
         'gan_type': args.gan_type,
-        
+        'model_path': args.model_path, 
     }
     print(configs)
     test_model(configs)
