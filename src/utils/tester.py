@@ -66,16 +66,7 @@ def test(hr_test_dir,
         test_logs = test_epoch.run(test_loader)
         
         print(test_logs)
-        # wandb.log({'epoch':i+1,
-        #             'test_loss':test_logs['LOSS'],
-        #             'test_ssim':test_logs['SSIM'],
-        #             'test_psnr':test_logs['PSNR'],
-        #             'test_mse':test_logs['MSE'],
-        #             'test_mae':test_logs['MAE'],
-        #             })
-        # #do something (save model, change lr, etc.)
-        # wandb.config.update({'min_test_mae':min_test_mae,'min_test_mse':min_test_mse, 'max_test_ssim':max_test_ssim, 'max_test_psnr':max_test_psnr}, allow_val_change=True)
-    print(f'max test ssim: {max_test_ssim} max test psnr: {max_test_psnr} min test mse: {min_test_mse} min test mae: {min_test_mae}')
+    print(f"max test ssim: {test_logs['SSIM']} max test psnr: {test_logs['PSNR']} min test mse: {test_logs['MSE']} min test mae: {test_logs['MAE']}")
 
 def test_model(configs):
     test(configs['hr_test_dir'],
