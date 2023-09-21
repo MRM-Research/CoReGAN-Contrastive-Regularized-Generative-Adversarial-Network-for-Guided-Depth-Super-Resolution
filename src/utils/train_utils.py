@@ -122,7 +122,7 @@ class Epoch:
         self.on_epoch_start()
 
         logs = {}
-        metrics_meters = {"MSE": AverageValueMeter(), "MAE": AverageValueMeter(), "PSNR": AverageValueMeter(), "SSIM": AverageValueMeter(), "LOSS": AverageValueMeter()}
+        metrics_meters = {"MSE": AverageValueMeter(), "MAE": AverageValueMeter(), "PSNR": AverageValueMeter(), "SSIM": AverageValueMeter(), "LOSS": AverageValueMeter(),"RMSE": AverageValueMeter() }
         iter = 0
         with tqdm(
             dataloader,
@@ -133,7 +133,7 @@ class Epoch:
             for iter,batch_data in enumerate(iterator): 
                 rgb,depth_low_res,depth_high_res = batch_data   
                 rgb,depth_low_res,depth_high_res = rgb.to(self.device), depth_low_res.to(self.device), depth_high_res.to(self.device)
-                loss, mse, mae , psnr, ssim = self.batch_update(iter, rgb, depth_low_res, depth_high_res)
+                loss, mse, mae , psnr, ssim, rmse = self.batch_update(iter, rgb, depth_low_res, depth_high_res)
                 
                 # detaching so loss can be added to metrics_meters
                 loss = loss.cpu().detach().numpy()
@@ -144,6 +144,7 @@ class Epoch:
                 metrics_meters["PSNR"].add(psnr.cpu().detach().numpy())
                 metrics_meters["SSIM"].add(ssim.cpu().detach().numpy())
                 metrics_meters["LOSS"].add(loss)
+                metrics_meters["RMSE"].add(rmse.cpu().detach().numpy())
 
                 metrics_logs = {k: v.mean for k, v in metrics_meters.items()}
                 logs.update(metrics_logs)
@@ -279,8 +280,8 @@ class TrainEpoch(Epoch):
             del self.depth_high_res
       
         mse_metric, mae_metric, psnr ,ssim = self.calculate_metrics(result_img, DHR_img,0.7132995,9.99547)  
-
-        return l_g_total, mse_metric, mae_metric, psnr, ssim
+        rmse_metric = torch.sqrt(rmse_metric).to("cuda")
+        return l_g_total, mse_metric, mae_metric, psnr, ssim, rmse_metric
 
 class ValidEpoch(Epoch):
     def __init__(self, model, discriminator, loss_weight, device="cpu", verbose=True, gan_type = "standard", batch_size = 8):
@@ -353,5 +354,5 @@ class ValidEpoch(Epoch):
             del self.depth_high_res
       
         mse_metric, mae_metric, psnr, ssim = self.calculate_metrics(result_img, DHR_img,0.7132995,9.9954)  
-
-        return l_g_total, mse_metric, mae_metric, psnr, ssim
+        rmse_metric = torch.sqrt(mse_metric).to("cuda")
+        return l_g_total, mse_metric, mae_metric, psnr, ssim, rmse_metric
