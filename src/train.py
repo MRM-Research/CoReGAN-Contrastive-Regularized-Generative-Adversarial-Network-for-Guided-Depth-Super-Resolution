@@ -45,7 +45,7 @@ if __name__ == '__main__':
     # parser.add_argument('--hr_test_dir', type=str, required=False, default='/content/drive/MyDrive/nyuv2-dataset/test/images')
     parser.add_argument('--hr_test_dir', type=str, required=False, default= '/kaggle/input/nyuv2-dataset/nyuv2-dataset/test/images')
     # parser.add_argument('--tar_test_dir', type=str, required=False, default='/content/drive/MyDrive/nyuv2-dataset/test/depths')
-    parser.add_argument('--hr_test_dir', type=str, required=False, default= '/kaggle/input/nyuv2-dataset/nyuv2-dataset/test/depths')
+    parser.add_argument('--tar_test_dir', type=str, required=False, default= '/kaggle/input/nyuv2-dataset/nyuv2-dataset/test/depths')
     parser.add_argument('--batch_size', type=int, required=False, default=8)
     parser.add_argument('--epochs', type=int, required=False, default=250)
     parser.add_argument('--device', type=str, required=False, default='cuda')
