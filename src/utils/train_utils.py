@@ -243,7 +243,7 @@ class TrainEpoch(Epoch):
             loss_dict['l_g_gan'] = l_g_gan
 
             # contrastive loss
-            l_g_total + (self.beta)*self.CLoss(f1, f2).to(self.device)
+            l_g_total += (self.beta)*self.CLoss(f1, f2).to(self.device)
 
             # backprop for generator
             l_g_total.backward()
